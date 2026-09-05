@@ -40,10 +40,7 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:5173 and sign in.
-
-> [!NOTE]
-> Test accounts on the dev backend: `mmd@corelia.ai` (admin), `aka@corelia.ai` (project manager), any other `@corelia.ai` address (employee). Password `Admin@123!`.
+Then open http://localhost:5173 and sign in with your team account.
 
 ## Scripts
 
