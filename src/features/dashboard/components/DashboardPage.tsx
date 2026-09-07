@@ -1,22 +1,26 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { PlusIcon } from 'lucide-react';
 import { ActivityEntry, User, Project } from '../../../entities';
+import { Button } from '@/components/ui/button';
+import { HistoryIcon } from 'lucide-react';
 import { useDashboardActivityFeed } from '../hooks/useDashboardActivityFeed';
 import { useDashboardDateNavigation } from '../hooks/useDashboardDateNavigation';
-import { DashboardMetricCards } from './DashboardMetricCards';
+import { DashboardTodayHero } from './DashboardTodayHero';
 import { DashboardTrendChart } from './DashboardTrendChart';
 import { DashboardDateSelector } from './DashboardDateSelector';
-import { DashboardFilters } from './DashboardFilters';
-import { DashboardActivityList } from './DashboardActivityList';
+import { DashboardActivityTimeline } from './DashboardActivityTimeline';
 import { DashboardPendingApprovals } from './DashboardPendingApprovals';
 import { DashboardMissedDayNudge } from './DashboardMissedDayNudge';
 import { DashboardPeriodProgress } from './DashboardPeriodProgress';
-import { DashboardStreakCard } from './DashboardStreakCard';
 import { logEvent } from '../../../lib/telemetry';
 import { calculateActualHours } from '../../../lib/utils';
 import {
+  DAILY_STRETCH_HOURS,
+  DAILY_TARGET_HOURS,
   getPayPeriod,
+  getPeriodStretchHours,
   getPeriodTargetHours,
   getPeriodWorkdays,
   getElapsedWorkdays,
@@ -72,11 +76,18 @@ interface DashboardPageProps {
   isActivitiesRefreshing?: boolean;
   loadedPeriodKey?: string | null;
   streakDays?: number;
+  taskBest?: number;
+  prevTaskBest?: number;
   isStreakLoading?: boolean;
   onAddActivity: () => void;
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
   onDeleteActivity: (id: string) => void;
+  isDraftRestored?: boolean;
+  onDiscardRecovery?: () => void;
+  onOpenDrafts?: () => void;
+  draftsCount?: number;
+  optimisticId?: string | null;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   filterProject: string;
@@ -94,11 +105,18 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   isActivitiesRefreshing = false,
   loadedPeriodKey = null,
   streakDays = 0,
+  taskBest = 0,
+  prevTaskBest = 0,
   isStreakLoading = false,
   onAddActivity,
   onEditActivity,
   onDuplicateActivity,
   onDeleteActivity,
+  isDraftRestored = false,
+  onDiscardRecovery,
+  onOpenDrafts,
+  draftsCount = 0,
+  optimisticId = null,
   searchQuery,
   onSearchChange,
   filterProject,
@@ -108,9 +126,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 }) => {
   const {
     todayActivities,
+    dayActivityCount,
     totalHoursToday,
-    completedToday,
-    targetProgress,
     weeklyTrendData,
     pendingActivities,
   } = useDashboardActivityFeed({
@@ -198,13 +215,45 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           onDismiss={() => handleNudgeDismiss(missedWorkday)}
         />
       )}
-      <DashboardDateSelector
-        selectedDate={selectedDate}
-        onPreviousDay={goToPreviousDay}
-        onNextDay={goToNextDay}
-        onToday={goToToday}
-        onDateChange={onDateChange}
-      />
+      {/* Recovery: an auto-saved in-progress activity from a previous session. */}
+      {isDraftRestored && (
+        <div
+          className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border bg-muted/40 px-4 py-2.5"
+          role="status"
+        >
+          <HistoryIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <p className="min-w-0 flex-1 text-sm font-medium text-foreground">
+            You have an unfinished activity. Continue where you left off?
+          </p>
+          {onDiscardRecovery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDiscardRecovery}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Discard
+            </Button>
+          )}
+          <Button size="sm" onClick={onAddActivity}>
+            Continue
+          </Button>
+        </div>
+      )}
+      {/* The day controls and the primary CTA share the page's top row. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <DashboardDateSelector
+          selectedDate={selectedDate}
+          onPreviousDay={goToPreviousDay}
+          onNextDay={goToNextDay}
+          onToday={goToToday}
+          onDateChange={onDateChange}
+        />
+        <Button onClick={onAddActivity} className="rounded-xl">
+          <PlusIcon data-icon="inline-start" />
+          Log activity
+        </Button>
+      </div>
       {/* Stay mounted while a new pay period loads; the switch gets its own moment. */}
       <div className="relative" aria-busy={isActivitiesRefreshing}>
         <AnimatePresence>
@@ -234,52 +283,58 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         </AnimatePresence>
         <div className="flex flex-col gap-6 lg:gap-8">
           {periodCovered && (
-            <div className="grid gap-4 lg:grid-cols-[1fr_14rem]">
-              <DashboardPeriodProgress
-                period={payPeriod}
-                loggedHours={calculateActualHours(ownActivities)}
-                targetHours={getPeriodTargetHours(payPeriod)}
-                workdays={periodWorkdays}
-                elapsedWorkdays={elapsedWorkdays.length}
-                canLogToday={viewingToday}
-                onLogToday={onAddActivity}
+            <>
+              {/* The hero row: logging loop up front, pay period as its compact side card.
+                  The primary CTA lives top-right in the app header. */}
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
+                <DashboardTodayHero
+                  selectedDate={selectedDate}
+                  loggedHours={totalHoursToday}
+                  targetHours={DAILY_TARGET_HOURS}
+                  stretchHours={DAILY_STRETCH_HOURS}
+                  activityCount={dayActivityCount}
+                  taskBest={taskBest}
+                  prevTaskBest={prevTaskBest}
+                  streakDays={streakDays}
+                  isStreakLoading={isStreakLoading}
+                />
+
+                <DashboardPeriodProgress
+                  period={payPeriod}
+                  loggedHours={calculateActualHours(ownActivities)}
+                  targetHours={getPeriodTargetHours(payPeriod)}
+                  workdays={periodWorkdays}
+                  elapsedWorkdays={elapsedWorkdays.length}
+                />              </div>
+
+              <DashboardActivityTimeline
+                activities={todayActivities}
+                projects={projects}
+                currentUser={currentUser}
+                selectedDate={selectedDate}
+                isActivitiesRefreshing={isActivitiesRefreshing}
+                searchQuery={searchQuery}
+                onSearchChange={onSearchChange}
+                filterProject={filterProject}
+                onFilterChange={onFilterChange}
+                onAddActivity={onAddActivity}
+                onEditActivity={onEditActivity}
+                onDuplicateActivity={onDuplicateActivity}
+                onDeleteActivity={onDeleteActivity}
+                onOpenRecurringActivities={onOpenRecurringActivities}
+                onOpenDrafts={onOpenDrafts}
+                draftsCount={draftsCount}
+                optimisticId={optimisticId}
               />
-              <DashboardStreakCard days={streakDays} isLoading={isStreakLoading} />
-            </div>
+
+              <DashboardTrendChart
+                weeklyTrendData={weeklyTrendData}
+                selectedDate={selectedDate}
+                onDateChange={onDateChange}
+                onLogFirst={onAddActivity}
+              />
+            </>
           )}
-          <DashboardMetricCards
-            activityCount={todayActivities.length}
-            targetActivitiesPerDay={currentUser.targetActivitiesPerDay}
-            targetProgress={targetProgress}
-            completedToday={completedToday}
-            totalHoursToday={totalHoursToday}
-            selectedDate={selectedDate}
-          />
-          <DashboardTrendChart
-            weeklyTrendData={weeklyTrendData}
-            selectedDate={selectedDate}
-            onDateChange={onDateChange}
-            onLogFirst={onAddActivity}
-          />
-          <DashboardFilters
-            searchQuery={searchQuery}
-            filterProject={filterProject}
-            projects={projects}
-            onSearchChange={onSearchChange}
-            onFilterChange={onFilterChange}
-            resultCount={todayActivities.length}
-          />
-          <DashboardActivityList
-            activities={todayActivities}
-            projects={projects}
-            currentUser={currentUser}
-            onAddActivity={onAddActivity}
-            onEditActivity={onEditActivity}
-            onDuplicateActivity={onDuplicateActivity}
-            onDeleteActivity={onDeleteActivity}
-            onOpenRecurringActivities={onOpenRecurringActivities}
-            onVoiceRecord={onVoiceRecord}
-          />
           <DashboardPendingApprovals activities={pendingActivities} projects={projects} />
         </div>
       </div>
