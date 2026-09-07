@@ -3,6 +3,7 @@ import type { ActivityEntry, Project, User } from '../entities';
 import type { ActivityDraft } from '../features/activity/model/activity.types';
 import type { BackendCompetency, BackendTeam, BackendUser, ParsedVoiceActivity } from '../lib/api';
 import { ActivityModal } from '../features/activity';
+import { DraftsDialog } from '../features/activity/components/DraftsDialog';
 import { adaptParsedVoiceActivityToDraftPatch, VoiceActivityModal } from '../features/activity/voice';
 import { CompetencyModal } from '../features/admin/components/CompetencyModal';
 import { ProjectModal } from '../features/admin/components/ProjectModal';
@@ -30,6 +31,8 @@ interface ActivityReportModalsProps {
   setIsRecurringActivitiesOpen: (value: boolean) => void;
   isVoiceModalOpen: boolean;
   setIsVoiceModalOpen: (value: boolean) => void;
+  isDraftsOpen: boolean;
+  setIsDraftsOpen: (value: boolean) => void;
   isWhatsNewOpen: boolean;
   setIsWhatsNewOpen: (value: boolean) => void;
   markWhatsNewSeen: () => void;
@@ -43,6 +46,8 @@ interface ActivityReportModalsProps {
   setEditingCompetency: (value: BackendCompetency | null) => void;
   currentUser: User;
   projects: Project[];
+  selectedDate: Date;
+  backendCompetencies: BackendCompetency[];
   backendUsers: BackendUser[];
   backendTeams: BackendTeam[];
   recurringActivities: ActivityEntry[];
@@ -55,6 +60,8 @@ interface ActivityReportModalsProps {
   mergeActivityPatch: (patch: Partial<ActivityDraft>) => void;
   resetActivityForm: () => void;
   submitActivity: (activity?: ActivityEntry) => Promise<void>;
+  onSaveActivityDraft: () => void;
+  onResumeActivityDraft: (draft: { id: string; savedAt: string; entryDate: string; draft: ActivityDraft }) => void;
   handleSaveProject: (projectData: Omit<Project, 'id'> & { projectType?: string; customerName?: string; teamIds?: number[] }) => Promise<void>;
   handleSaveUser: (userData: {
     email: string;
@@ -90,6 +97,8 @@ export const ActivityReportModals: React.FC<ActivityReportModalsProps> = ({
   setIsRecurringActivitiesOpen,
   isVoiceModalOpen,
   setIsVoiceModalOpen,
+  isDraftsOpen,
+  setIsDraftsOpen,
   isWhatsNewOpen,
   setIsWhatsNewOpen,
   markWhatsNewSeen,
@@ -103,6 +112,8 @@ export const ActivityReportModals: React.FC<ActivityReportModalsProps> = ({
   setEditingCompetency,
   currentUser,
   projects,
+  selectedDate,
+  backendCompetencies,
   backendUsers,
   backendTeams,
   recurringActivities,
@@ -115,6 +126,8 @@ export const ActivityReportModals: React.FC<ActivityReportModalsProps> = ({
   mergeActivityPatch,
   resetActivityForm,
   submitActivity,
+  onSaveActivityDraft,
+  onResumeActivityDraft,
   handleSaveProject,
   handleSaveUser,
   handleSaveTeam,
@@ -128,8 +141,10 @@ export const ActivityReportModals: React.FC<ActivityReportModalsProps> = ({
       <ActivityModal
         isOpen={isAddingActivity}
         onClose={() => {
+          // Deliberately keeps the form: an untouched create-draft (restored or
+          // saved earlier) must survive an accidental close. Discarding is an
+          // explicit action inside the modal.
           setIsAddingActivity(false);
-          resetActivityForm();
         }}
         activity={activityDraft}
         onChange={setActivityDraft}
@@ -138,6 +153,18 @@ export const ActivityReportModals: React.FC<ActivityReportModalsProps> = ({
         projects={projects}
         isSubmitting={isActivitySubmitting}
         isEditingRecurringActivity={isEditingRecurringActivity}
+        entryDate={selectedDate}
+        backendCompetencies={backendCompetencies}
+        onSaveDraft={() => {
+          onSaveActivityDraft();
+        }}
+      />
+
+      <DraftsDialog
+        isOpen={isDraftsOpen}
+        onClose={() => setIsDraftsOpen(false)}
+        onResume={onResumeActivityDraft}
+        projects={projects}
       />
 
       <ProjectModal
