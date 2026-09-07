@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
 import { CheckIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { competenciesApi, type BackendCompetency } from '../../../lib/api';
+import type { BackendCompetency } from '../../../lib/api';
 import type { ActivityDraft } from '../model/activity.types';
 
 interface ActivityCompetencyPickerProps {
   competencies: ActivityDraft['competencies'];
   onToggle: (competency: ActivityDraft['competencies'][number]) => void;
+  options: BackendCompetency[];
 }
 
 const tagColors = [
@@ -14,22 +14,12 @@ const tagColors = [
   '#24A148', '#FF832B', '#1192E8', '#D12771', '#198038',
 ];
 
-export const ActivityCompetencyPicker = ({ competencies, onToggle }: ActivityCompetencyPickerProps) => {
-  const [backendCompetencies, setBackendCompetencies] = useState<BackendCompetency[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    competenciesApi.getAll().then((data) => {
-      if (!cancelled) setBackendCompetencies(data);
-    }).catch(console.error);
-    return () => { cancelled = true; };
-  }, []);
-
-  if (backendCompetencies.length === 0) return null;
+export const ActivityCompetencyPicker = ({ competencies, onToggle, options }: ActivityCompetencyPickerProps) => {
+  if (options.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-2.5">
-      <span className="text-sm font-medium flex items-center gap-2" role="label">
+    <div className="flex flex-col gap-2.5" aria-labelledby="activity-skills-label">
+      <span id="activity-skills-label" className="text-sm font-medium flex items-center gap-2">
         Skills used
         {competencies.length > 0 && (
           <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-bold tabular-nums">
@@ -38,7 +28,7 @@ export const ActivityCompetencyPicker = ({ competencies, onToggle }: ActivityCom
         )}
       </span>
       <div className="flex flex-wrap gap-2">
-        {backendCompetencies.map((competency, index) => {
+        {options.map((competency, index) => {
           const tag = competency.name.toLowerCase().replace(/\s+/g, '-');
           const isSelected = competencies.includes(tag as ActivityDraft['competencies'][number]);
           const color = tagColors[index % tagColors.length];
