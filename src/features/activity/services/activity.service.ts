@@ -26,6 +26,7 @@ const buildActivityPayload = (draft: ActivityDraft, context: ActivityUpdateConte
 };
 
 export const activityService = {
+  /** Saves the draft; resolves with the server's activity for creates (null for edits). */
   submit: async (draft: ActivityDraft, options: ActivitySubmitOptions) => {
     const payload = buildActivityPayload(draft, options);
 
@@ -46,14 +47,15 @@ export const activityService = {
           endDate: recurrence?.endDate,
           competencyIds: payload.competencyIds,
         });
-        return;
+        return null;
       }
 
       await activitiesApi.update(parseInt(options.editingActivity.id, 10), payload);
-      return;
+      return null;
     }
 
-    await activitiesApi.create(payload);
+    const created = await activitiesApi.create(payload);
+    return created ?? null;
   },
 
   delete: async (activityId: string) => {
