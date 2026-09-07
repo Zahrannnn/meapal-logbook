@@ -1,9 +1,9 @@
 import React from 'react';
 import {
   BarChart3,
+  BookOpen,
   Download,
   FileSpreadsheet,
-  LayoutDashboard,
   LogOut,
   Megaphone,
   Shield,
@@ -71,7 +71,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     .toUpperCase();
 
   const menuItems: MenuItem[] = [
-    { mode: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { mode: 'dashboard', label: 'My Logbook', icon: BookOpen },
     { mode: 'analytics', label: 'Analytics', icon: BarChart3, managerOnly: true },
     { mode: 'reports', label: 'Reports', icon: FileSpreadsheet, managerOnly: true },
     {
