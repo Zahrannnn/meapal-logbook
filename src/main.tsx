@@ -1,4 +1,6 @@
+import './instrument'; // ← MUST be first
 import { StrictMode } from 'react';
+import { reactErrorHandler } from '@sentry/react';
 // Force light mode by removing dark class and preventing it from being added
 document.documentElement.classList.remove('dark');
 
@@ -44,6 +46,10 @@ import { registerServiceWorker } from './pwa';
 
 registerServiceWorker();
 
-createRoot(document.getElementById('root')!).render(<StrictMode>
+createRoot(document.getElementById('root')!, {
+  onUncaughtError: reactErrorHandler(),
+  onCaughtError: reactErrorHandler(),
+  onRecoverableError: reactErrorHandler(),
+}).render(<StrictMode>
     <App />
   </StrictMode>);
