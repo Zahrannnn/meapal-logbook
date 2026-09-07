@@ -45,7 +45,7 @@ export const ActivityProgressFields: React.FC<ActivityProgressFieldsProps> = ({
 
       <Field>
         <FieldLabel>
-          Deadline <span className="text-destructive">*</span>
+          Deadline
         </FieldLabel>
         <DatePicker
           value={activity.deadline || undefined}
