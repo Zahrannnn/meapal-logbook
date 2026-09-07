@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '@/lib/toast';
 import type { Project } from '../entities';
 import {
   competenciesApi,
