@@ -17,6 +17,7 @@ export const useActivityReportUiState = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isRecurringActivitiesOpen, setIsRecurringActivitiesOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [isDraftsOpen, setIsDraftsOpen] = useState(false);
 
   const [editingProject, setEditingProject] = useState<EditableProject | null>(null);
   const [editingUser, setEditingUser] = useState<BackendUser | null>(null);
@@ -132,6 +133,8 @@ export const useActivityReportUiState = () => {
     setIsRecurringActivitiesOpen,
     isVoiceModalOpen,
     setIsVoiceModalOpen,
+    isDraftsOpen,
+    setIsDraftsOpen,
     isWhatsNewOpen,
     setIsWhatsNewOpen,
     whatsNewUnseen,
