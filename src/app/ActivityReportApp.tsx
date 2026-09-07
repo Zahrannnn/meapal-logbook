@@ -60,6 +60,8 @@ export const ActivityReportApp = () => {
         isActivitiesRefreshing={app.isActivitiesRefreshing}
         loadedPeriodKey={app.loadedPeriodKey}
         streakDays={app.streakDays}
+        taskBest={app.taskBest}
+        prevTaskBest={app.prevTaskBest}
         isStreakLoading={app.isStreakLoading}
         backendUserId={backendUserId}
         searchQuery={app.searchQuery}
@@ -76,6 +78,11 @@ export const ActivityReportApp = () => {
           app.setIsRecurringActivitiesOpen(true);
         }}
         onVoiceRecord={() => app.setIsVoiceModalOpen(true)}
+        isDraftRestored={app.isDraftRestored}
+        onDiscardRecovery={app.handleDiscardRecovery}
+        onOpenDrafts={() => app.setIsDraftsOpen(true)}
+        draftsCount={app.draftsCount}
+        optimisticId={app.optimisticId}
         onAddProject={app.handleAddProject}
         onEditProject={app.handleEditProject}
         onDeleteProject={app.handleDeleteProject}
@@ -109,6 +116,8 @@ export const ActivityReportApp = () => {
         setIsRecurringActivitiesOpen={app.setIsRecurringActivitiesOpen}
         isVoiceModalOpen={app.isVoiceModalOpen}
         setIsVoiceModalOpen={app.setIsVoiceModalOpen}
+        isDraftsOpen={app.isDraftsOpen}
+        setIsDraftsOpen={app.setIsDraftsOpen}
         isWhatsNewOpen={app.isWhatsNewOpen}
         setIsWhatsNewOpen={app.setIsWhatsNewOpen}
         markWhatsNewSeen={app.markWhatsNewSeen}
@@ -122,6 +131,8 @@ export const ActivityReportApp = () => {
         setEditingCompetency={app.setEditingCompetency}
         currentUser={currentUser}
         projects={app.projects}
+        selectedDate={app.selectedDate}
+        backendCompetencies={app.backendCompetencies}
         backendUsers={app.backendUsers}
         backendTeams={app.backendTeams}
         recurringActivities={app.recurringActivities}
@@ -134,6 +145,8 @@ export const ActivityReportApp = () => {
         mergeActivityPatch={app.mergeActivityPatch}
         resetActivityForm={app.resetActivityForm}
         submitActivity={app.submitActivity}
+        onSaveActivityDraft={app.handleSaveActivityDraft}
+        onResumeActivityDraft={app.handleResumeDraft}
         handleSaveProject={app.handleSaveProject}
         handleSaveUser={app.handleSaveUser}
         handleSaveTeam={app.handleSaveTeam}
