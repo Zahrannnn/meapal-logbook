@@ -20,6 +20,8 @@ interface ActivityReportContentProps {
   isActivitiesRefreshing?: boolean;
   loadedPeriodKey?: string | null;
   streakDays?: number;
+  taskBest?: number;
+  prevTaskBest?: number;
   isStreakLoading?: boolean;
   backendUserId: number | null;
   searchQuery: string;
@@ -28,11 +30,16 @@ interface ActivityReportContentProps {
   onAddActivity: () => void;
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
-  onDeleteActivity: (id: string) => Promise<void>;
+  onDeleteActivity: (id: string) => void;
   onSearchChange: (value: string) => void;
   onFilterChange: (value: string) => void;
   onOpenRecurringActivities: () => void;
   onVoiceRecord: () => void;
+  isDraftRestored?: boolean;
+  onDiscardRecovery?: () => void;
+  onOpenDrafts?: () => void;
+  draftsCount?: number;
+  optimisticId?: string | null;
   onAddProject: () => void;
   onEditProject: (project: Project) => void;
   onDeleteProject: (projectId: string) => Promise<void>;
@@ -69,6 +76,8 @@ export const ActivityReportContent: React.FC<ActivityReportContentProps> = ({
   isActivitiesRefreshing = false,
   loadedPeriodKey = null,
   streakDays = 0,
+  taskBest = 0,
+  prevTaskBest = 0,
   isStreakLoading = false,
   backendUserId,
   searchQuery,
@@ -82,6 +91,11 @@ export const ActivityReportContent: React.FC<ActivityReportContentProps> = ({
   onFilterChange,
   onOpenRecurringActivities,
   onVoiceRecord,
+  isDraftRestored = false,
+  onDiscardRecovery,
+  onOpenDrafts,
+  draftsCount = 0,
+  optimisticId = null,
   onAddProject,
   onEditProject,
   onDeleteProject,
@@ -108,6 +122,8 @@ export const ActivityReportContent: React.FC<ActivityReportContentProps> = ({
         isActivitiesRefreshing={isActivitiesRefreshing}
         loadedPeriodKey={loadedPeriodKey}
         streakDays={streakDays}
+        taskBest={taskBest}
+        prevTaskBest={prevTaskBest}
         isStreakLoading={isStreakLoading}
         onAddActivity={onAddActivity}
         onEditActivity={onEditActivity}
@@ -119,6 +135,11 @@ export const ActivityReportContent: React.FC<ActivityReportContentProps> = ({
         onFilterChange={onFilterChange}
         onOpenRecurringActivities={onOpenRecurringActivities}
         onVoiceRecord={onVoiceRecord}
+        isDraftRestored={isDraftRestored}
+        onDiscardRecovery={onDiscardRecovery}
+        onOpenDrafts={onOpenDrafts}
+        draftsCount={draftsCount}
+        optimisticId={optimisticId}
       />
     );
   }
