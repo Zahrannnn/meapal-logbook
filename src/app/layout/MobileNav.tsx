@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-  Activity,
   BarChart3,
+  BookOpen,
   FileSpreadsheet,
   FolderKanban,
   Plus,
@@ -75,8 +75,8 @@ export const MobileNav: React.FC<MobileNavProps> = ({
   const tabs: TabItem[] = [
     {
       id: 'dashboard',
-      label: 'Dashboard',
-      icon: Activity,
+      label: 'My Logbook',
+      icon: BookOpen,
       isActive: viewMode === 'dashboard',
       onClick: () => onViewModeChange('dashboard'),
     },
