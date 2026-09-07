@@ -17,7 +17,7 @@ const statusOptions = [
 export const ActivityStatusSelector = ({ status, onChange }: ActivityStatusSelectorProps) => (
   <div className="flex flex-col gap-2.5">
     <span className="text-sm font-medium flex items-center gap-1">
-      Status <span className="text-destructive">*</span>
+      Status
     </span>
     <ToggleGroup
       type="single"
@@ -27,7 +27,7 @@ export const ActivityStatusSelector = ({ status, onChange }: ActivityStatusSelec
       onValueChange={(value) => {
         if (value) onChange(value as ActivityDraft['status']);
       }}
-      className="w-full"
+      className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4"
       aria-label="Status"
     >
       {statusOptions.map((option) => (
@@ -35,7 +35,7 @@ export const ActivityStatusSelector = ({ status, onChange }: ActivityStatusSelec
           key={option.value}
           value={option.value}
           aria-label={option.label}
-          className={cn('flex-1 min-w-0 px-2 rounded-xl border font-bold', option.selected)}
+          className={cn('w-full min-w-0 gap-1.5 px-2 py-2 rounded-xl border text-xs font-bold', option.selected)}
         >
           <span className={cn('size-2 rounded-full shrink-0', option.dot, status === option.value ? '' : 'opacity-40')} />
           <span className="truncate">{option.label}</span>
