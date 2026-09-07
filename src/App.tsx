@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from './components/ui/sonner';
 import { Container, Theme } from './settings/types';
 import { ActivityReportApp } from './app/ActivityReportApp';
 import { AppErrorBoundary } from './app/AppErrorBoundary';
@@ -38,7 +38,7 @@ function App() {
   if (container === 'centered') {
     return (
       <>
-        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+        <Toaster position="top-right" />
         <div className="h-full w-full flex flex-col items-center justify-center">
           {generatedComponent}
         </div>
@@ -47,7 +47,7 @@ function App() {
   } else {
     return (
       <>
-        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+        <Toaster position="top-right" />
         <AppErrorBoundary>{generatedComponent}</AppErrorBoundary>
       </>
     );
