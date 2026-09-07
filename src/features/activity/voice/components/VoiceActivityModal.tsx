@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import toast from 'react-hot-toast';
+import { toast } from '@/lib/toast';
 import type { ParsedVoiceActivity } from '../../../../lib/api';
 import type { Project } from '../../../../entities';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
