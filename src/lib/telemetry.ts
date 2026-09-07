@@ -15,9 +15,13 @@ export type TelemetryEventName =
   | 'modal_open'
   | 'modal_save'
   | 'modal_cancel'
+  | 'modal_draft_saved'
   | 'nudge_click'
   | 'nudge_dismiss'
   | 'duplicate_click'
+  | 'draft_saved'
+  | 'draft_resumed'
+  | 'draft_restored'
   | 'period_progress_view'
   | 'period_cta_click'
   | 'app_error';
