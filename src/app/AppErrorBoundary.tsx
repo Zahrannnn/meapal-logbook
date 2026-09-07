@@ -1,4 +1,5 @@
 import React from 'react';
+import * as Sentry from '@sentry/react';
 import { logEvent } from '../lib/telemetry';
 import { Button } from '@/components/ui/button';
 
@@ -18,6 +19,9 @@ export class AppErrorBoundary extends React.Component<AppErrorBoundaryProps, App
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: info.componentStack ?? undefined } },
+    });
     logEvent('app_error', {
       message: error.message,
       stack: (info.componentStack || '').slice(0, 500),
