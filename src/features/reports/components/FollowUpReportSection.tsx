@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, ClipboardList, Download, Loader2 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from '@/lib/toast';
 import type { BackendTeam, BackendUser } from '../../../lib/api';
 import type { Project } from '../../../entities';
 import { reportsApi } from '../../../lib/api/reports.client';
