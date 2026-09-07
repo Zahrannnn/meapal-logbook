@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { InfoIcon } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronDown, InfoIcon } from 'lucide-react';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -22,6 +23,8 @@ interface TrendPoint {
   day: string;
   activities: number;
   hours: number;
+  /** Friday/Saturday — rest days get muted bars, but anything logged still counts. */
+  rest?: boolean;
 }
 
 interface DashboardTrendChartProps {
@@ -46,7 +49,10 @@ const ChartTooltip = ({ active, payload }: TooltipProps) => {
 
   return (
     <div className="rounded-lg border bg-card px-3 py-2 shadow-md">
-      <p className="text-xs font-bold text-foreground">{point.day}</p>
+      <p className="text-xs font-bold text-foreground">
+        {point.day}
+        {point.rest && <span className="ml-1.5 font-medium text-muted-foreground">rest day</span>}
+      </p>
       <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
         {point.activities} {point.activities === 1 ? 'activity' : 'activities'}
         {point.hours > 0 && ` · ${point.hours.toFixed(1)}h`}
@@ -55,15 +61,36 @@ const ChartTooltip = ({ active, payload }: TooltipProps) => {
   );
 };
 
+const WEEKLY_OPEN_KEY = 'logbook:weekly-open';
+
 export const DashboardTrendChart: React.FC<DashboardTrendChartProps> = ({
   weeklyTrendData,
   selectedDate,
   onDateChange,
   onLogFirst,
 }) => {
+  // Analytics are tertiary on this screen: collapsed until the user asks for them.
+  const [isOpen, setIsOpen] = useState(() => {
+    try {
+      return localStorage.getItem(WEEKLY_OPEN_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleOpen = () => {
+    const next = !isOpen;
+    setIsOpen(next);
+    try {
+      localStorage.setItem(WEEKLY_OPEN_KEY, next ? '1' : '0');
+    } catch {
+      // storage unavailable — the section just won't remember its state
+    }
+  };
+
   const weekTotal = weeklyTrendData.reduce((sum, point) => sum + point.activities, 0);
   const weekHours = weeklyTrendData.reduce((sum, point) => sum + point.hours, 0);
-  // The five points are the Sun→Thu working week containing the selected date.
+  // The seven points are the Sat→Fri week containing the selected date.
   const weekStartStr = weeklyTrendData[0]?.date;
   const weekEndStr = weeklyTrendData[weeklyTrendData.length - 1]?.date;
   const todayStr = format(new Date(), 'yyyy-MM-dd');
@@ -90,10 +117,29 @@ export const DashboardTrendChart: React.FC<DashboardTrendChartProps> = ({
   };
 
   return (
-    <Card className="rounded-2xl py-5 gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 px-6">
-        <CardTitle>Weekly activity trend</CardTitle>
-        <div className="flex items-center gap-0.5">
+    <Card className="rounded-2xl py-5 gap-0">
+      <div
+        className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 px-6 cursor-pointer select-none"
+        onClick={toggleOpen}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isOpen}
+        aria-label={isOpen ? 'Collapse weekly overview' : 'Expand weekly overview'}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleOpen();
+          }
+        }}
+      >
+        <CardTitle className="flex items-center gap-2">
+          Weekly overview
+          <ChevronDown
+            className={`size-4 text-muted-foreground transition-transform duration-200 ${isOpen ? '' : '-rotate-90'}`}
+            aria-hidden="true"
+          />
+        </CardTitle>
+        <div className="flex items-center gap-0.5" onClick={(event) => event.stopPropagation()}>
           <p className="text-sm text-muted-foreground tabular-nums">
             {weekTotal} {weekTotal === 1 ? 'activity' : 'activities'} · {weekHours.toFixed(1)}h {windowLabel}
           </p>
@@ -114,7 +160,7 @@ export const DashboardTrendChart: React.FC<DashboardTrendChartProps> = ({
                 <li>
                   Shows your week <span className="font-semibold text-foreground">Saturday to Friday</span> containing
                   the selected date ({format(selectedDate, 'EEE, MMM d')}
-                  {isCurrentWeek ? ', current week' : ''}) — the same days as the bars. The working days inside it are
+                  {isCurrentWeek ? ', current week' : ''}), the same days as the bars. The working days inside it are
                   Sunday to Thursday.
                 </li>
                 <li>
@@ -126,8 +172,7 @@ export const DashboardTrendChart: React.FC<DashboardTrendChartProps> = ({
                   between each entry&apos;s start and end. Overlapping entries count once, and entries whose end time
                   isn&apos;t after their start are skipped.
                 </li>
-                <li>Friday and Saturday are rest days, but anything you log on them counts.</li>
-                <li>Your current search and project filters apply.</li>
+                <li>Friday and Saturday are rest days (muted in the chart), but anything you log on them counts.</li>
                 {onDateChange && <li>Select a bar to open that day.</li>}
               </ul>
             </PopoverContent>
@@ -135,74 +180,87 @@ export const DashboardTrendChart: React.FC<DashboardTrendChartProps> = ({
         </div>
       </div>
 
-      <CardContent className="px-2">
-        {weekTotal === 0 ? (
-          <div className="relative flex h-[180px] items-end justify-center overflow-hidden rounded-lg">
-            {/* ghost bars hinting at the shape of a logged week */}
-            <div className="flex items-end gap-3 opacity-25" aria-hidden="true">
-              {[64, 96, 40, 118, 72, 30, 84].map((height, index) => (
-                <div
-                  key={index}
-                  className="w-9 rounded-t-md border border-dashed border-muted-foreground/40 bg-muted/40"
-                  style={{ height: `${height}px` }}
-                />
-              ))}
-            </div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center">
-              <p className="text-sm font-semibold text-foreground">Nothing logged this week</p>
-              <p className="text-xs text-muted-foreground">
-                {isCurrentWeek
-                  ? 'Your Sun–Thu days fill in as you log.'
-                  : `The working days of ${weekRange} would appear here.`}
-              </p>
-              {isCurrentWeek && onLogFirst && (
-                <Button size="sm" variant="outline" className="mt-1" onClick={onLogFirst}>
-                  Log the first one
-                </Button>
-              )}
-            </div>
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={weeklyTrendData} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis
-                dataKey="day"
-                stroke="var(--muted-foreground)"
-                tickLine={false}
-                axisLine={false}
-                style={{ fontSize: '12px', fontWeight: 600 }}
-              />
-              <YAxis
-                allowDecimals={false}
-                stroke="var(--muted-foreground)"
-                tickLine={false}
-                axisLine={false}
-                style={{ fontSize: '12px', fontWeight: 600 }}
-              />
-              <Tooltip content={<ChartTooltip />} cursor={{ fill: 'var(--muted)' }} />
-              <Bar
-                dataKey="activities"
-                radius={[6, 6, 0, 0]}
-                maxBarSize={36}
-                cursor={onDateChange ? 'pointer' : undefined}
-                activeBar={{ fill: 'var(--chart-1)' }}
-                onClick={onDateChange ? handleBarClick : undefined}
-              >
-                {weeklyTrendData.map((point) => {
-                  const isSelected = point.date === selectedDateStr;
-                  return (
-                    <Cell
-                      key={point.date}
-                      fill={isSelected ? 'var(--chart-1)' : 'color-mix(in srgb, var(--chart-1) 22%, transparent)'}
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            key="weekly-chart"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="overflow-hidden"
+          >
+            <CardContent className="px-2 pt-5">
+              {weekTotal === 0 ? (
+                <div className="relative flex h-[180px] items-end justify-center overflow-hidden rounded-lg">
+                  {/* ghost bars hinting at the shape of a logged week */}
+                  <div className="flex items-end gap-3 opacity-25" aria-hidden="true">
+                    {[64, 96, 40, 118, 72, 30, 84].map((height, index) => (
+                      <div
+                        key={index}
+                        className="w-9 rounded-t-md border border-dashed border-muted-foreground/40 bg-muted/40"
+                        style={{ height: `${height}px` }}
+                      />
+                    ))}
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center">
+                    <p className="text-sm font-semibold text-foreground">Nothing logged this week</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isCurrentWeek
+                        ? 'Your Sun–Thu days fill in as you log.'
+                        : `The working days of ${weekRange} would appear here.`}
+                    </p>
+                    {isCurrentWeek && onLogFirst && (
+                      <Button size="sm" variant="outline" className="mt-1" onClick={onLogFirst}>
+                        Log the first one
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={weeklyTrendData} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                    <XAxis
+                      dataKey="day"
+                      stroke="var(--muted-foreground)"
+                      tickLine={false}
+                      axisLine={false}
+                      style={{ fontSize: '12px', fontWeight: 600 }}
                     />
-                  );
-                })}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+                    <YAxis
+                      allowDecimals={false}
+                      stroke="var(--muted-foreground)"
+                      tickLine={false}
+                      axisLine={false}
+                      style={{ fontSize: '12px', fontWeight: 600 }}
+                    />
+                    <Tooltip content={<ChartTooltip />} cursor={{ fill: 'var(--muted)' }} />
+                    <Bar
+                      dataKey="activities"
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={36}
+                      cursor={onDateChange ? 'pointer' : undefined}
+                      activeBar={{ fill: 'var(--chart-1)' }}
+                      onClick={onDateChange ? handleBarClick : undefined}
+                    >
+                      {weeklyTrendData.map((point) => {
+                        const isSelected = point.date === selectedDateStr;
+                        const fill = isSelected
+                          ? 'var(--chart-1)'
+                          : point.rest
+                            ? 'color-mix(in srgb, var(--muted-foreground) 20%, transparent)'
+                            : 'color-mix(in srgb, var(--chart-1) 22%, transparent)';
+                        return <Cell key={point.date} fill={fill} />;
+                      })}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </motion.div>
         )}
-      </CardContent>
+      </AnimatePresence>
     </Card>
   );
 };
