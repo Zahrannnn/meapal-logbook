@@ -1,9 +1,9 @@
 import React from 'react';
 import {
   BarChart3,
+  BookOpen,
   Download,
   FileSpreadsheet,
-  LayoutDashboard,
   LogOut,
   Menu,
   Megaphone,
@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
   const installButtonTitle = isInstalled ? 'App installed' : 'Install app';
 
   const navItems: NavItem[] = [
-    { mode: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { mode: 'dashboard', label: 'My Logbook', icon: BookOpen },
   ];
 
   if (currentUser.role === 'manager' || currentUser.role === 'admin') {
