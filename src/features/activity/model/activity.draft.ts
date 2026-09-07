@@ -25,7 +25,9 @@ export const createDefaultActivityDraft = (): ActivityDraft => ({
   endTime: '10:00',
   projectId: '',
   competencies: [],
-  status: 'in-progress',
+  // Most quick logs are finished work; 'in-progress' drags the deadline
+  // requirement into every entry.
+  status: 'completed',
   notes: '',
   recurring: createDefaultRecurrence(),
   progress: 0,
