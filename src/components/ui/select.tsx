@@ -53,8 +53,10 @@ function SelectTrigger({
 function SelectContent({
   className,
   children,
-  position = "item-aligned",
-  align = "center",
+  // "popper" sizes the listbox to its content and drops it below the trigger;
+  // the "item-aligned" default stretches dropdowns to the full viewport height.
+  position = "popper",
+  align = "start",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   return (
