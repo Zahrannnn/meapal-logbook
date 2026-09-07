@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { X, Upload, Users, CheckCircle2, Loader2, FileText, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BackendTeam, cookies } from '../../../lib/api';
-import toast from 'react-hot-toast';
+import { toast } from '@/lib/toast';
 
 interface BulkUserImportModalProps {
   isOpen: boolean;
