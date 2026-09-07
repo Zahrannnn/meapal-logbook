@@ -49,6 +49,12 @@ export interface ActivityModalProps {
   projects: Project[];
   isSubmitting?: boolean;
   isEditingRecurringActivity?: boolean;
+  /** The dashboard day this entry will be logged against — shown in the header. */
+  entryDate?: Date;
+  /** App-level competency list; providing it skips the picker's own fetch. */
+  backendCompetencies?: BackendCompetency[];
+  /** Parks the current form in the Drafts list and starts fresh. */
+  onSaveDraft?: () => void;
 }
 
 export interface ConvertBackendActivityOptions {
