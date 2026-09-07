@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '@/lib/toast';
 import type { BackendTeam, BackendUser } from '../../../lib/api';
 import { calculateActualHours } from '../../../lib/utils';
 import type { ActivityEntry, Project, User } from '../../../entities';
