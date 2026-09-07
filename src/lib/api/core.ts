@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import toast from 'react-hot-toast';
+import { toast } from '@/lib/toast';
 import Cookie from 'cookie-universal';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000/api/v1`;
