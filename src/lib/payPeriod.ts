@@ -126,3 +126,13 @@ const PERIOD_TARGET_HOURS: Record<string, number> = {
 
 export const getPeriodTargetHours = (period: PayPeriod): number =>
   PERIOD_TARGET_HOURS[period.startStr] ?? 160;
+
+// Tiered targets: main, then stretch, then overtime. The period stretch sits 30h past
+// the main target (160h -> 190h); the day carries its own fixed pair.
+export const PERIOD_STRETCH_EXTRA_HOURS = 30;
+
+export const getPeriodStretchHours = (period: PayPeriod): number =>
+  getPeriodTargetHours(period) + PERIOD_STRETCH_EXTRA_HOURS;
+
+export const DAILY_TARGET_HOURS = 8;
+export const DAILY_STRETCH_HOURS = 9;
