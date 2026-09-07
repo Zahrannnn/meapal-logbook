@@ -56,6 +56,10 @@ export const useActivityReportData = ({ currentUser, viewMode, selectedDate }: U
   // Streak over ALL history: one year-scoped fetch of the user's own entries, recomputed
   // after every save/delete (see refreshStreak). Independent of the loaded period.
   const [streakDays, setStreakDays] = useState(0);
+  // Personal Task Record: the user's best single-day task count, computed from the same
+  // fetch. No fixed limits; `prevTaskBest` excludes today so "new record" is detectable.
+  const [taskBest, setTaskBest] = useState(0);
+  const [prevTaskBest, setPrevTaskBest] = useState(0);
   const [isStreakLoading, setIsStreakLoading] = useState(true);
   const isInitialMount = useRef(true);
 
@@ -138,20 +142,38 @@ export const useActivityReportData = ({ currentUser, viewMode, selectedDate }: U
 
   // The streak spans every period, so it gets its own year-scoped fetch of the user's
   // entries and is recomputed whenever it could have changed (login, save, delete).
+  // The backend's endDate is EXCLUSIVE, so the window extends to tomorrow — otherwise
+  // today's entries are invisible and the streak can never count today.
   const refreshStreak = useCallback(async () => {
     if (!currentUser) return;
     setIsStreakLoading(true);
     try {
       const end = new Date();
       const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - 364);
+      const windowEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate() + 1);
       const res = await activitiesApi.getAll({
         limit: 5000,
         userId: Number(currentUser.id),
         startDate: toDayStr(start),
-        endDate: toDayStr(end),
+        endDate: toDayStr(windowEnd),
       });
       const loggedDates = new Set(res.activities.map((activity) => backendEntryDate(activity.startTime)));
       setStreakDays(getStreakDays(loggedDates, end));
+
+      const countsByDate: Record<string, number> = {};
+      for (const activity of res.activities) {
+        const key = backendEntryDate(activity.startTime);
+        countsByDate[key] = (countsByDate[key] ?? 0) + 1;
+      }
+      const todayKey = toDayStr(end);
+      let best = 0;
+      let prevBest = 0;
+      for (const [key, count] of Object.entries(countsByDate)) {
+        best = Math.max(best, count);
+        if (key !== todayKey) prevBest = Math.max(prevBest, count);
+      }
+      setTaskBest(best);
+      setPrevTaskBest(prevBest);
     } catch (err) {
       console.error('Failed to refresh streak:', err);
     } finally {
@@ -367,8 +389,11 @@ export const useActivityReportData = ({ currentUser, viewMode, selectedDate }: U
     isActivitiesRefreshing,
     loadedPeriodKey,
     streakDays,
+    taskBest,
+    prevTaskBest,
     isStreakLoading,
     refreshStreak,
+    mapActivities,
     error,
     fetchAllData: () => fetchViewData(viewMode, true),
     fetchViewData,
