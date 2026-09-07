@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '@/lib/toast';
 import type { Project } from '../../../entities';
 import type { EditableProject as AppEditableProject } from '../../../app/appMappers';
 import type { BackendUser } from '../../../lib/api';
