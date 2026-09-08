@@ -24,9 +24,11 @@ Sentry.init({
 
   // Tracing
   tracesSampleRate: 1.0, // lower to 0.1–0.2 in production
-  tracePropagationTargets: ['localhost', /^\//, import.meta.env.VITE_API_URL].filter(
-    (t): t is string | RegExp => Boolean(t)
-  ),
+  // Same-origin only: stamping the cross-origin API with sentry-trace/baggage
+  // turns simple requests into preflighted ones, which the backend's CORS
+  // allow-list (Content-Type,Authorization) rejects. Re-enable the API host
+  // here only together with an Access-Control-Allow-Headers update.
+  tracePropagationTargets: [/^\//],
 
   // Session Replay
   replaysSessionSampleRate: 0.1,
