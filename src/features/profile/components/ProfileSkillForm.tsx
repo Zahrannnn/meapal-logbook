@@ -26,25 +26,25 @@ export const ProfileSkillForm: React.FC<ProfileSkillFormProps> = ({
   onSelectLevel,
   onAddSkill,
 }) => (
-  <div className="flex flex-col gap-3">
+  <div className="flex flex-col gap-2.5">
     <div className="flex items-center justify-between">
-      <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-        <AwardIcon className="size-[18px] text-primary" />
-        My skills
+      <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+        <AwardIcon className="size-4 text-primary" aria-hidden="true" />
+        Skills
       </h3>
-      <span className="text-sm font-semibold text-muted-foreground tabular-nums">
+      <span className="text-xs font-semibold text-muted-foreground tabular-nums">
         {skillCount} {skillCount === 1 ? 'skill' : 'skills'}
       </span>
     </div>
 
-    <div className="flex flex-col gap-3 p-4 rounded-xl border bg-muted/40">
-      <p className="text-sm font-semibold text-foreground">Add a new skill</p>
-      <div className="flex flex-col sm:flex-row gap-2">
+    <div className="flex flex-col gap-2.5 rounded-xl border bg-muted/40 p-3.5">
+      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Add a skill</p>
+      <div className="flex flex-col gap-2 sm:flex-row">
         <Select
           value={selectedCompetency ? String(selectedCompetency) : ''}
           onValueChange={(value) => onSelectCompetency(value ? parseInt(value, 10) : '')}
         >
-          <SelectTrigger className="flex-1 w-full bg-card">
+          <SelectTrigger className="flex-1 w-full">
             <SelectValue placeholder="Select a skill…" />
           </SelectTrigger>
           <SelectContent>
@@ -56,7 +56,7 @@ export const ProfileSkillForm: React.FC<ProfileSkillFormProps> = ({
           </SelectContent>
         </Select>
         <Select value={selectedLevel} onValueChange={(value) => onSelectLevel(value as SkillLevel)}>
-          <SelectTrigger className="sm:w-36 bg-card">
+          <SelectTrigger className="w-full sm:w-36">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
