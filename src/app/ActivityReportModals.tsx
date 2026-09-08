@@ -222,7 +222,9 @@ export const ActivityReportModals: React.FC<ActivityReportModalsProps> = ({
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
         currentUser={currentUser}
-        onProfileUpdated={onProfileUpdated}
+        // Skill changes update the profile's own lists locally; refetching the
+        // whole app here fired the global loader on every skill edit.
+        onProfileUpdated={undefined}
       />
 
       <RecurringActivitiesModal

@@ -62,15 +62,7 @@ export const AppLogo: React.FC<AppLogoProps> = ({
           >
             Meapal LogBook
           </span>
-          <span
-            className={cn(
-              'font-medium uppercase tracking-widest mt-0.5',
-              isInverse ? 'text-white/60' : 'text-muted-foreground',
-              large ? 'text-[11px]' : 'text-[10px]',
-            )}
-          >
-            Ricoh · Internal
-          </span>
+         
         </div>
       )}
     </div>

@@ -31,7 +31,7 @@ export const NotFoundPage: React.FC = () => {
         </Button>
 
         <p className="mt-10 text-[11px] text-muted-foreground">
-          Meapal LogBook · Ricoh internal system
+          Meapal LogBook 
         </p>
       </div>
     </div>

@@ -49,11 +49,13 @@ export const useProfileSkills = ({ isOpen, onProfileUpdated }: UseProfileSkillsO
 
   const handleAddSkill = useCallback(
     async (competencyId?: number, level?: SkillLevel) => {
-      const id = competencyId ?? (selectedCompetency as number);
+      // Guards against the click event leaking in through an unbound handler.
+      const id = typeof competencyId === 'number' ? competencyId : (selectedCompetency as number);
+      const nextLevel = typeof level === 'string' ? level : selectedLevel;
       if (!id) return;
       setIsSaving(true);
       try {
-        const newSkill = await profileService.addSkill(id, level ?? selectedLevel);
+        const newSkill = await profileService.addSkill(id, nextLevel);
         setSkills((currentSkills) => [...currentSkills, newSkill]);
         setSelectedCompetency('');
         setSelectedLevel('intermediate');
@@ -61,7 +63,8 @@ export const useProfileSkills = ({ isOpen, onProfileUpdated }: UseProfileSkillsO
         onProfileUpdated?.();
       } catch (error) {
         console.error('Failed to add skill:', error);
-        toast.error('Failed to add skill. You may already have this skill.');
+        const message = error instanceof Error && error.message ? error.message : '';
+        toast.error(message || 'Failed to add skill. Please try again.');
       } finally {
         setIsSaving(false);
       }

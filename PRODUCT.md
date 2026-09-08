@@ -17,7 +17,7 @@ An internal daily activity reporting workspace for Ricoh teams. The core loop: o
 - Working days are Sunday to Thursday. Friday and Saturday are rest days: no targets, no alerts, muted visuals, but anything logged still counts.
 - Daily hour targets are fixed (8h main, 9h stretch), independent of the period math. Logged hours are the primary KPI and the most prominent element on the screen, formatted as hours and minutes ("6h 30m").
 - Tasks have NO fixed daily limit. Instead each user has a Personal Task Record: the highest number of tasks they ever completed in a single day, computed from their own history. The UI compares today's count to that personal best ("2 away from your best") and celebrates a new record lightly (confetti once per day, never disruptive).
-- Streak counts consecutive logged working days; rest days never break it.
+- Streak counts consecutive working days the user logged in real time — an entry only counts if it was created on the same calendar day it is dated. Backfilling past days in one sitting never inflates the streak; rest days still extend it when actually worked and logged that day.
 - Hours are honest: real percentages past target ("118%", "+29h over target"), overlapping entries counted once.
 
 ## Tone

@@ -67,7 +67,7 @@ export const ProfileSkillForm: React.FC<ProfileSkillFormProps> = ({
             ))}
           </SelectContent>
         </Select>
-        <Button onClick={onAddSkill} disabled={!selectedCompetency || isSaving}>
+        <Button onClick={() => onAddSkill()} disabled={!selectedCompetency || isSaving}>
           {isSaving ? <Loader2Icon data-icon="inline-start" className="animate-spin" /> : <PlusIcon data-icon="inline-start" />}
           Add
         </Button>

@@ -157,8 +157,7 @@ export const useActivityReportData = ({ currentUser, viewMode, selectedDate }: U
         startDate: toDayStr(start),
         endDate: toDayStr(windowEnd),
       });
-      const loggedDates = new Set(res.activities.map((activity) => backendEntryDate(activity.startTime)));
-      setStreakDays(getStreakDays(loggedDates, end));
+      setStreakDays(getStreakDays(res.activities, end));
 
       const countsByDate: Record<string, number> = {};
       for (const activity of res.activities) {

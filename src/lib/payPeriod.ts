@@ -93,20 +93,44 @@ export const getElapsedWorkdays = (workdays: Date[], period: PayPeriod, today = 
  * submitting on a rest day extends it. An un-logged today doesn't break it either —
  * the day is still in progress.
  */
-export const getStreakDays = (loggedDates: Set<string>, today = new Date()): number => {
+/**
+ * The streak counts consecutive working days the user logged IN REAL TIME —
+ * an entry must have been created on the same calendar day it is dated. That
+ * way backfilling a whole missed week in one sitting marks only today, and
+ * the run never retroactively inflates. Rest days still extend the run when
+ * the user actually worked (and logged) them on the day.
+ */
+export interface StreakLogEntry {
+  startTime: string;
+  createdAt?: string;
+}
+
+export const getStreakDays = (activities: StreakLogEntry[], today = new Date()): number => {
   const todayStart = startOfDay(today);
+
+  // A working day is "streak-logged" only if at least one entry dated that day
+  // was created that same day (UTC dates, matching how entries are dated).
+  const sameDayLogged = new Set<string>();
+  for (const activity of activities) {
+    const entryDate = activity.startTime.slice(0, 10);
+    const createdDate = activity.createdAt?.slice(0, 10);
+    if (createdDate && createdDate === entryDate) {
+      sameDayLogged.add(entryDate);
+    }
+  }
+
   let streak = 0;
   const cursor = new Date(todayStart);
 
   for (let back = 0; back < 365; back += 1) {
     const isToday = cursor.getTime() === todayStart.getTime();
-    const logged = loggedDates.has(toDayStr(cursor));
+    const logged = sameDayLogged.has(toDayStr(cursor));
 
     if (isWorkingDay(cursor)) {
       if (logged) {
         streak += 1;
       } else if (!isToday) {
-        break; // a past working day with nothing logged ends the streak
+        break; // a past working day with nothing logged that day ends the streak
       }
     } else if (logged) {
       streak += 1; // worked a rest day — it extends the run
