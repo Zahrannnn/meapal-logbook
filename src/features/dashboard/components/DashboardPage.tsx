@@ -240,8 +240,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </Button>
         </div>
       )}
-      {/* The day controls and the primary CTA share the page's top row. */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* The day controls and the primary CTA share the page's top row — sticky under the app header. */}
+      <div className="sticky top-[52px] z-20 -mx-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 bg-background/90 px-4 py-2 backdrop-blur-sm sm:top-14 lg:-mx-2 lg:rounded-b-xl lg:px-2">
         <DashboardDateSelector
           selectedDate={selectedDate}
           onPreviousDay={goToPreviousDay}

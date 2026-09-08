@@ -208,7 +208,7 @@ export const DashboardTodayHero: React.FC<DashboardTodayHeroProps> = ({
   );
 
   return (
-    <Card className="rounded-2xl gap-0 py-5" aria-label={`Daily progress for ${heading}`}>
+    <Card className="rounded-2xl gap-0 py-5" aria-label={`Daily progress for ${heading}`} data-tour="hero">
       <div className="flex items-start justify-between gap-4 px-4 lg:px-6">
         <div className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{heading}</p>

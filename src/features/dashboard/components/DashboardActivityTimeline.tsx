@@ -186,7 +186,7 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
   );
 
   return (
-    <Card className="rounded-2xl gap-0 py-0 overflow-hidden">
+    <Card className="rounded-2xl gap-0 py-0 overflow-hidden" data-tour="list">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b px-4 py-3 lg:px-6">
         <h3 className="flex items-center gap-2 text-base font-semibold">
           Today&apos;s activities

@@ -120,6 +120,8 @@ export const ActivityReportApp = () => {
         setIsDraftsOpen={app.setIsDraftsOpen}
         isWhatsNewOpen={app.isWhatsNewOpen}
         setIsWhatsNewOpen={app.setIsWhatsNewOpen}
+        isReleaseMomentOpen={app.isReleaseMomentOpen}
+        closeReleaseMoment={app.closeReleaseMoment}
         markWhatsNewSeen={app.markWhatsNewSeen}
         editingProject={app.editingProject}
         setEditingProject={app.setEditingProject}

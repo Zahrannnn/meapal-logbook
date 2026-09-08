@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { ActivityEntry } from '../entities';
 import type { BackendCompetency, BackendTeam, BackendUser } from '../lib/api';
 import type { EditableProject } from './appMappers';
@@ -42,11 +42,20 @@ export const useActivityReportUiState = () => {
     }
   };
 
-  // First visit after a release: show the notes once, after login.
-  useEffect(() => {
-    if (whatsNewUnseen) setIsWhatsNewOpen(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // First visit after a release: play the release moment (once) instead of
+  // auto-opening the notes dialog — the full notes stay in the account menu.
+  const [isReleaseMomentOpen, setIsReleaseMomentOpen] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('logbook:whats-new-seen') !== CURRENT_RELEASE.version;
+    } catch {
+      return true;
+    }
+  });
+
+  const closeReleaseMoment = () => {
+    setIsReleaseMomentOpen(false);
+    markWhatsNewSeen();
+  };
 
   const [viewMode, setViewModeState] = useState<ViewMode>(() => {
     const saved = sessionStorage.getItem('viewMode');
@@ -137,6 +146,8 @@ export const useActivityReportUiState = () => {
     setIsDraftsOpen,
     isWhatsNewOpen,
     setIsWhatsNewOpen,
+    isReleaseMomentOpen,
+    closeReleaseMoment,
     whatsNewUnseen,
     markWhatsNewSeen,
     editingProject,

@@ -11,6 +11,7 @@ import { TeamModal } from '../features/admin/components/TeamModal';
 import { UserModal } from '../features/admin/components/UserModal';
 import { MyProfileModal } from '../features/profile';
 import { RecurringActivitiesModal } from '../features/recurring-activities';
+import { ReleaseMoment } from '../features/whats-new';
 import { WhatsNewModal } from '../features/whats-new';
 import type { EditableProject } from '../features/admin/hooks/useProjectModalState';
 
@@ -35,6 +36,8 @@ interface ActivityReportModalsProps {
   setIsDraftsOpen: (value: boolean) => void;
   isWhatsNewOpen: boolean;
   setIsWhatsNewOpen: (value: boolean) => void;
+  isReleaseMomentOpen: boolean;
+  closeReleaseMoment: () => void;
   markWhatsNewSeen: () => void;
   editingProject: EditableProject | null;
   setEditingProject: (value: EditableProject | null) => void;
@@ -101,6 +104,8 @@ export const ActivityReportModals: React.FC<ActivityReportModalsProps> = ({
   setIsDraftsOpen,
   isWhatsNewOpen,
   setIsWhatsNewOpen,
+  isReleaseMomentOpen,
+  closeReleaseMoment,
   markWhatsNewSeen,
   editingProject,
   setEditingProject,
@@ -167,6 +172,15 @@ export const ActivityReportModals: React.FC<ActivityReportModalsProps> = ({
         projects={projects}
       />
 
+      {isReleaseMomentOpen && (
+        <ReleaseMoment
+          onDone={closeReleaseMoment}
+          onOpenWhatsNew={() => {
+            closeReleaseMoment();
+            setIsWhatsNewOpen(true);
+          }}
+        />
+      )}
       <ProjectModal
         isOpen={isAddingProject}
         onClose={() => {

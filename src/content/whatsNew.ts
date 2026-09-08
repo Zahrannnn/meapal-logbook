@@ -13,6 +13,8 @@ export interface WhatsNewRelease {
   version: string;
   date: string;
   title: string;
+  /** Top 3 one-liners for the release moment intro. */
+  highlights?: string[];
   sections: WhatsNewSection[];
 }
 
@@ -20,6 +22,11 @@ export const CURRENT_RELEASE: WhatsNewRelease = {
   version: '1.3.0',
   date: '2026-09-08',
   title: 'Logging first: your day, your record, zero friction',
+  highlights: [
+    'Your logged hours lead the screen',
+    'Personal Task Record — race your own best',
+    'Save as draft. Undo deletes. Never lose an entry.',
+  ],
   sections: [
     {
       title: 'Your day at a glance',
