@@ -57,13 +57,19 @@ export const DashboardPeriodProgress: React.FC<DashboardPeriodProgressProps> = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const overMainHours = Math.max(0, loggedHours - targetHours);
+  const overStretchHours = Math.max(0, loggedHours - stretchHours);
+  // Zero deltas render as "+0.0h" — only show them when there is a real surplus.
+  const overMainText = overMainHours >= 0.05 ? ` · +${overMainHours.toFixed(1)}h` : '';
+  const overStretchText = overStretchHours >= 0.05 ? ` · +${overStretchHours.toFixed(1)}h` : '';
+
   const statusBadge = overtime ? (
     <Badge variant="success" className="tabular-nums">
-      Overtime +{(loggedHours - stretchHours).toFixed(1)}h
+      Overtime{overStretchText}
     </Badge>
   ) : reached ? (
     <Badge variant="success" className="tabular-nums">
-      Main target reached · +{(loggedHours - targetHours).toFixed(1)}h
+      Main target reached{overMainText}
     </Badge>
   ) : isClosed ? (
     <Badge variant="secondary" className="tabular-nums">

@@ -181,15 +181,21 @@ export const DashboardTodayHero: React.FC<DashboardTodayHeroProps> = ({
   ) : overtime ? (
     <p className="flex items-center gap-1.5 text-sm font-bold text-foreground">
       <span className="font-semibold text-emerald-600">Overtime</span>
-      <span className="font-semibold text-emerald-600 tabular-nums">
-        {formatDelta(loggedHours - stretchHours)} past stretch
-      </span>
+      {loggedHours > stretchHours && (
+        <span className="font-semibold text-emerald-600 tabular-nums">
+          {formatDelta(loggedHours - stretchHours)} past stretch
+        </span>
+      )}
     </p>
   ) : reached ? (
     <p className="flex items-center gap-1.5 text-sm font-bold text-foreground">
       <PartyPopper className="size-4 text-orange-500" aria-hidden="true" />
       Main target reached
-      <span className="font-semibold text-emerald-600 tabular-nums">{formatDelta(loggedHours - targetHours)} over</span>
+      {loggedHours > targetHours && (
+        <span className="font-semibold text-emerald-600 tabular-nums">
+          {formatDelta(loggedHours - targetHours)} over
+        </span>
+      )}
     </p>
   ) : loggedHours <= 0 ? (
     <p className="text-sm font-bold text-foreground">
