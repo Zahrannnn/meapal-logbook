@@ -250,7 +250,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = (props) => {
         {/* Exports live next to the results they export */}
         <div className="flex flex-wrap items-center gap-2 border-t bg-muted/50 px-5 py-3.5">
           {reportType === 'followup' ? (
-            <Button size="sm" variant="outline" onClick={() => void reports.exportFollowUpCsv()} disabled={!canExport || reports.isExporting}>
+            <Button size="sm" variant="outline" onClick={() => void reports.exportFollowUpCsv()} disabled={!canExport || reports.isExporting || reports.isExportingFollowUp}>
               <FileSpreadsheetIcon data-icon="inline-start" />
               Export follow-up CSV
             </Button>
