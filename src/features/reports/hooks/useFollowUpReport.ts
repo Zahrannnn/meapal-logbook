@@ -5,9 +5,7 @@ import { reportsService } from '../services/reports.service';
 import { reportsApi } from '../../../lib/api/reports.client';
 import type { FollowUpRow } from '../../../lib/api/types';
 import { buildFollowUpCsv } from '../utils/report-exporters';
-
-const toErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
+import { toErrorMessage } from '../utils/errors';
 
 const fmtDate = (d: Date) => d.toISOString().split('T')[0];
 

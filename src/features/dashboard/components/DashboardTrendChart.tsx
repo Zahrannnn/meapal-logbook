@@ -47,7 +47,7 @@ export const DashboardTrendChart: React.FC<DashboardTrendChartProps> = ({
   const weekStartStr = weeklyTrendData[0]?.date;
   const weekEndStr = weeklyTrendData[weeklyTrendData.length - 1]?.date;
   const todayStr = format(new Date(), 'yyyy-MM-dd');
-  const isCurrentWeek = !!weekStartStr && weekEndStr !== undefined && todayStr >= weekStartStr && todayStr <= weekEndStr;
+  const isCurrentWeek = !!weekStartStr && todayStr >= weekStartStr && todayStr <= weekEndStr;
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
 
   // Range label: "Aug 16 – Thu 20" within a month, "Aug 30 – Sep 3" across months.

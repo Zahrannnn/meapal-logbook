@@ -20,6 +20,7 @@ import {
   buildTeamMembersCsv,
 } from '../utils/report-exporters';
 import { useFollowUpReport } from './useFollowUpReport';
+import { toErrorMessage } from '../utils/errors';
 
 interface UseReportsStateOptions {
   activities: ActivityEntry[];
@@ -35,9 +36,6 @@ interface UseReportsStateOptions {
     userId?: number;
   }) => Promise<void>;
 }
-
-const toErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 export const useReportsState = ({
   activities,

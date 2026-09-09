@@ -11,7 +11,6 @@ import { EmployeePreview, RosterCard } from './EmployeeReportPreview';
 import { FollowUpPreview } from './FollowUpReportPreview';
 import { ProjectPreview, TeamPreview } from './GroupReportPreviews';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 interface ReportsPageProps {
   activities: ActivityEntry[];
@@ -29,11 +28,7 @@ interface ReportsPageProps {
   }) => Promise<void>;
 }
 
-
-
 const fmtDay = (date: Date) => format(date, 'MMM d, yyyy');
-
-
 
 export const ReportsPage: React.FC<ReportsPageProps> = (props) => {
   const reports = useReportsState(props);
@@ -107,7 +102,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = (props) => {
               rows={reports.followUpRows}
               isLoading={reports.isLoadingFollowUp}
               onExport={() => void reports.exportFollowUpCsv()}
-              isExporting={reports.isExporting}
+              isExporting={reports.isExporting || reports.isExportingFollowUp}
             />
           ) : reports.filteredActivities.length === 0 ? (
             <div className="flex min-h-[10rem] flex-col items-center justify-center gap-1 py-10 text-center">
@@ -160,6 +155,3 @@ export const ReportsPage: React.FC<ReportsPageProps> = (props) => {
     </div>
   );
 };
-
-/* ── Previews ──────────────────────────────────────────────────────────── */
-

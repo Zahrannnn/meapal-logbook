@@ -66,7 +66,9 @@ export const BulkUserImportModal: React.FC<BulkUserImportModalProps> = ({
         errors: data.data?.errors || []
       });
 
-      if (data.data?.successCount || data.data?.success) {
+      // Strict > 0 on both count fields, matching the original endpoint contract
+      // (either shape may arrive; undefined behaves as 0).
+      if ((data.data?.successCount ?? 0) > 0 || (data.data?.success ?? 0) > 0) {
         onSuccess();
       }
     } catch (error: unknown) {
