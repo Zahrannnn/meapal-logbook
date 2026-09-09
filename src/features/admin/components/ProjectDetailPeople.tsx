@@ -79,7 +79,7 @@ export const MembersSection: React.FC<{
 
 export const ContributorsSection: React.FC<{
   activeUsers: BackendUser[];
-  projectActivities: Array<{ userId: number }>;
+  projectActivities: Array<{ userId: number; date?: string; startTime: string; endTime: string }>;
   teamsById: Map<number, { name: string }>;
   getTeamColor: (name: string) => string;
 }> = ({ activeUsers, projectActivities, teamsById, getTeamColor }) => (
