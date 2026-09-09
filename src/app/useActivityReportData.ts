@@ -185,8 +185,17 @@ export const useActivityReportData = ({ currentUser, viewMode, selectedDate }: U
   }, [refreshStreak]);
 
   const fetchAnalyticsData = useCallback(async () => {
+    // Analytics covers a rolling year: the page's charts, rankings and table all
+    // compute over this window, so it must not be capped to a tiny recent page.
+    const end = new Date();
+    const windowEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate() + 1); // endDate is exclusive
+    const start = new Date(end.getFullYear(), end.getMonth() - 11, end.getDate());
     const [activitiesRes, projectsRes, teamsRes] = await Promise.all([
-      activitiesApi.getAll({ limit: 10 }),
+      activitiesApi.getAll({
+        limit: 5000,
+        startDate: toDayStr(start),
+        endDate: toDayStr(windowEnd),
+      }),
       projectsApi.getAll({ limit: 100 }),
       teamsApi.getAll({ limit: 100 }),
     ]);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { format, endOfWeek, startOfWeek } from 'date-fns';
 import { ActivityEntry, Project } from '../../../entities';
 import type { BackendProject, BackendTeam } from '../../../lib/api';
 import { useAnalyticsReport } from '../hooks/useAnalyticsReport';
@@ -6,9 +7,7 @@ import { AnalyticsHeader } from './AnalyticsHeader';
 import { AnalyticsSummaryCards } from './AnalyticsSummaryCards';
 import { AnalyticsProductivityChart } from './AnalyticsProductivityChart';
 import { AnalyticsCompetencyDistribution } from './AnalyticsCompetencyDistribution';
-import { AnalyticsRadarSection } from './AnalyticsRadarSection';
-import { AnalyticsTeamPerformance } from './AnalyticsTeamPerformance';
-import { AnalyticsTopPerformers } from './AnalyticsTopPerformers';
+import { AnalyticsRankings } from './AnalyticsRankings';
 import { AnalyticsRecentActivitiesTable } from './AnalyticsRecentActivitiesTable';
 
 interface AnalyticsPageProps {
@@ -48,10 +47,28 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
     selectedDate,
   });
 
+  // Every number on this page is scoped to the selected period — say so.
+  const scopeLabel =
+    period === 'daily'
+      ? format(selectedDate, 'EEE, MMM d, yyyy')
+      : period === 'weekly'
+        ? `${format(startOfWeek(selectedDate), 'MMM d')} – ${format(endOfWeek(selectedDate), 'MMM d')}`
+        : format(selectedDate, 'MMMM yyyy');
+
+  // The table obeys the same project/team filters as the rest of the page.
+  const filteredActivities = React.useMemo(
+    () =>
+      selectedProjectId
+        ? activities.filter((activity) => activity.projectId === String(selectedProjectId))
+        : activities,
+    [activities, selectedProjectId],
+  );
+
   return (
-    <div className="space-y-6 lg:space-y-8">
+    <div className="flex flex-col gap-6">
       <AnalyticsHeader
         period={period}
+        scopeLabel={scopeLabel}
         selectedTeamId={selectedTeamId}
         selectedProjectId={selectedProjectId}
         backendTeams={backendTeams}
@@ -63,21 +80,26 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
         onRefresh={() => void fetchReport()}
       />
 
-      {error && <div className="p-4 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-sm">{error}</div>}
+      {error && (
+        <div role="alert" className="rounded-xl border border-warning/30 bg-warning/10 p-3.5 text-sm font-semibold text-warning">
+          {error}
+        </div>
+      )}
 
       <AnalyticsSummaryCards summaryStats={summaryStats} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <AnalyticsProductivityChart isLoading={isLoading} weeklyTrendData={weeklyTrendData} />
         <AnalyticsCompetencyDistribution isLoading={isLoading} competencyDistribution={competencyDistribution} />
-        <AnalyticsRadarSection isLoading={isLoading} radarData={radarData} />
-        <AnalyticsTeamPerformance isLoading={isLoading} teamPerformance={teamPerformance} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <AnalyticsTopPerformers isLoading={isLoading} topPerformers={topPerformers} />
-        <AnalyticsRecentActivitiesTable activities={activities} projects={projects} />
-      </div>
-    </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <AnalyticsRankings
+          isLoading={isLoading}
+          teamPerformance={teamPerformance}
+          topPerformers={topPerformers}
+        />
+        <AnalyticsRecentActivitiesTable activities={filteredActivities} projects={projects} />
+      </div>    </div>
   );
 };

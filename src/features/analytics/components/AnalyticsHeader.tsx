@@ -1,10 +1,14 @@
 import React from 'react';
-import { BarChart3, RefreshCw } from 'lucide-react';
+import { RefreshCwIcon } from 'lucide-react';
 import type { BackendProject, BackendTeam } from '../../../lib/api';
 import type { ReportPeriod } from '../hooks/useAnalyticsReport';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface AnalyticsHeaderProps {
   period: ReportPeriod;
+  /** Human-readable date scope of the current numbers, e.g. "Sep 2 – Sep 8". */
+  scopeLabel: string;
   selectedTeamId?: number;
   selectedProjectId?: number;
   backendTeams: BackendTeam[];
@@ -16,8 +20,15 @@ interface AnalyticsHeaderProps {
   onRefresh: () => void;
 }
 
+const PERIODS: Array<{ value: ReportPeriod; label: string }> = [
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+];
+
 export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
   period,
+  scopeLabel,
   selectedTeamId,
   selectedProjectId,
   backendTeams,
@@ -28,67 +39,79 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
   onProjectChange,
   onRefresh,
 }) => (
-  <div className="bg-white rounded-2xl shadow-sm border border-gray-100/80 p-5 lg:p-6">
-    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-      <div className="flex items-center gap-3">
-        <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-          <BarChart3 className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h2 className="text-xl lg:text-2xl font-bold text-gray-900">Analytics & Reports</h2>
-          <p className="text-gray-500 text-sm">Performance insights from the backend</p>
-        </div>
+  <header className="flex flex-col gap-4">
+    <div className="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Analytics</h1>
+        <p className="mt-0.5 text-sm font-medium text-muted-foreground">Team performance · {scopeLabel}</p>
+      </div>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        onClick={onRefresh}
+        disabled={isLoading}
+        aria-label="Refresh analytics"
+        className="text-muted-foreground hover:text-foreground"
+      >
+        <RefreshCwIcon className={isLoading ? 'animate-spin' : ''} />
+      </Button>
+    </div>
+
+    <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+      <div
+        className="flex w-full rounded-lg border border-input bg-card p-1 sm:w-auto"
+        role="group"
+        aria-label="Report period"
+      >
+        {PERIODS.map((entry) => (
+          <button
+            key={entry.value}
+            onClick={() => onPeriodChange(entry.value)}
+            aria-pressed={period === entry.value}
+            className={`flex-1 rounded-md px-3.5 py-1.5 text-sm font-semibold transition-colors sm:flex-none ${
+              period === entry.value ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {entry.label}
+          </button>
+        ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-        <div className="flex bg-gray-100 rounded-xl p-1 w-full sm:w-auto">
-          {(['daily', 'weekly', 'monthly'] as ReportPeriod[]).map((entry) => (
-            <button
-              key={entry}
-              onClick={() => onPeriodChange(entry)}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                period === entry ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {entry.charAt(0).toUpperCase() + entry.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        <select
-          value={selectedTeamId || ''}
-          onChange={(event) => onTeamChange(event.target.value ? parseInt(event.target.value, 10) : undefined)}
-          className="flex-1 sm:flex-none w-full sm:w-auto min-w-[130px] max-w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200 truncate"
+      <div className="flex flex-1 flex-wrap items-center gap-2.5 sm:flex-none sm:ml-auto">
+        <Select
+          value={selectedTeamId ? String(selectedTeamId) : 'all'}
+          onValueChange={(value) => onTeamChange(value === 'all' ? undefined : parseInt(value, 10))}
         >
-          <option value="">All Teams</option>
-          {backendTeams.map((team) => (
-            <option key={team.id} value={team.id}>
-              {team.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-full sm:w-44" aria-label="Filter by team">
+            <SelectValue placeholder="All teams" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All teams</SelectItem>
+            {backendTeams.map((team) => (
+              <SelectItem key={team.id} value={String(team.id)}>
+                {team.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        <select
-          value={selectedProjectId || ''}
-          onChange={(event) => onProjectChange(event.target.value ? parseInt(event.target.value, 10) : undefined)}
-          className="flex-1 sm:flex-none w-full sm:w-auto min-w-[130px] max-w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200 truncate"
+        <Select
+          value={selectedProjectId ? String(selectedProjectId) : 'all'}
+          onValueChange={(value) => onProjectChange(value === 'all' ? undefined : parseInt(value, 10))}
         >
-          <option value="">All Projects</option>
-          {backendProjects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.name}
-            </option>
-          ))}
-        </select>
-
-        <button
-          onClick={onRefresh}
-          disabled={isLoading}
-          className="p-2.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 disabled:opacity-50 ml-auto sm:ml-0"
-        >
-          <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-        </button>
+          <SelectTrigger className="w-full sm:w-44" aria-label="Filter by project">
+            <SelectValue placeholder="All projects" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All projects</SelectItem>
+            {backendProjects.map((project) => (
+              <SelectItem key={project.id} value={String(project.id)}>
+                {project.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
-  </div>
+  </header>
 );

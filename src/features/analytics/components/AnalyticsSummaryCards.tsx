@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, CheckCircle2, Clock, FolderKanban, TrendingUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AnalyticsSummaryCardsProps {
   summaryStats: {
@@ -11,48 +11,47 @@ interface AnalyticsSummaryCardsProps {
   };
 }
 
-export const AnalyticsSummaryCards: React.FC<AnalyticsSummaryCardsProps> = ({ summaryStats }) => (
-  <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-5">
-    <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-4 lg:p-5 border border-blue-100/50">
-      <div className="flex items-center gap-2 text-blue-600 mb-2">
-        <FolderKanban className="w-5 h-5" />
-        <span className="text-sm font-semibold">Total Activities</span>
-      </div>
-      <p className="text-2xl lg:text-3xl font-bold text-blue-900">{summaryStats.totalActivities}</p>
-    </div>
+interface Stat {
+  label: string;
+  value: string;
+  emphasis?: boolean;
+}
 
-    <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl p-4 lg:p-5 border border-emerald-100/50">
-      <div className="flex items-center gap-2 text-emerald-600 mb-2">
-        <CheckCircle2 className="w-5 h-5" />
-        <span className="text-sm font-semibold">Completed</span>
-      </div>
-      <p className="text-2xl lg:text-3xl font-bold text-emerald-900">{summaryStats.completedActivities}</p>
-    </div>
+/** One stat strip instead of five pastel cards: numbers first, no decoration. */
+export const AnalyticsSummaryCards: React.FC<AnalyticsSummaryCardsProps> = ({ summaryStats }) => {
+  const hours =
+    typeof summaryStats.totalHours === 'number' ? summaryStats.totalHours.toFixed(1) : summaryStats.totalHours;
+  const avg =
+    typeof summaryStats.averageHoursPerDay === 'number'
+      ? summaryStats.averageHoursPerDay.toFixed(1)
+      : summaryStats.averageHoursPerDay;
 
-    <div className="bg-gradient-to-br from-violet-50 to-violet-100/50 rounded-xl p-4 lg:p-5 border border-violet-100/50">
-      <div className="flex items-center gap-2 text-violet-600 mb-2">
-        <Clock className="w-5 h-5" />
-        <span className="text-sm font-semibold">Total Hours</span>
-      </div>
-      <p className="text-3xl font-bold text-purple-900">
-        {typeof summaryStats.totalHours === 'number' ? summaryStats.totalHours.toFixed(1) : summaryStats.totalHours}h
-      </p>
-    </div>
+  const stats: Stat[] = [
+    { label: 'Total activities', value: String(summaryStats.totalActivities), emphasis: true },
+    { label: 'Completed', value: String(summaryStats.completedActivities) },
+    { label: 'Total hours', value: `${hours}h`, emphasis: true },
+    { label: 'Completion rate', value: `${summaryStats.completionRate}%` },
+    { label: 'Avg hours / day', value: `${avg}h` },
+  ];
 
-    <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4">
-      <div className="flex items-center gap-2 text-orange-600 mb-2">
-        <TrendingUp className="w-5 h-5" />
-        <span className="text-sm font-semibold">Completion Rate</span>
-      </div>
-      <p className="text-3xl font-bold text-orange-900">{summaryStats.completionRate}%</p>
+  return (
+    <div
+      className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border bg-border sm:grid-cols-3 lg:grid-cols-5"
+      aria-label="Period summary"
+    >
+      {stats.map((stat) => (
+        <div key={stat.label} className="flex flex-col gap-1.5 bg-card px-4 py-4">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+          <p
+            className={cn(
+              'text-2xl leading-none font-extrabold tabular-nums tracking-tight',
+              stat.emphasis ? 'text-foreground' : 'text-foreground/80',
+            )}
+          >
+            {stat.value}
+          </p>
+        </div>
+      ))}
     </div>
-
-    <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-xl p-4">
-      <div className="flex items-center gap-2 text-cyan-600 mb-2">
-        <Calendar className="w-5 h-5" />
-        <span className="text-sm font-semibold">Avg Hours/Day</span>
-      </div>
-      <p className="text-3xl font-bold text-cyan-900">{summaryStats.averageHoursPerDay}h</p>
-    </div>
-  </div>
-);
+  );
+};

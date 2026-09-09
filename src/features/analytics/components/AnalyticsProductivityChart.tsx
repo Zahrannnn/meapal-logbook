@@ -1,6 +1,15 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
+import { AnalyticsCard } from './AnalyticsCard';
 
 interface AnalyticsProductivityChartProps {
   isLoading: boolean;
@@ -11,35 +20,35 @@ interface AnalyticsProductivityChartProps {
   }>;
 }
 
+const tooltipStyle = {
+  backgroundColor: 'var(--popover)',
+  border: '1px solid var(--border)',
+  borderRadius: '0.75rem',
+  fontSize: '12px',
+  color: 'var(--popover-foreground)',
+};
+
 export const AnalyticsProductivityChart: React.FC<AnalyticsProductivityChartProps> = ({
   isLoading,
   weeklyTrendData,
 }) => (
-  <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
-    <h3 className="text-lg font-bold text-gray-900 mb-4">Productivity Trend</h3>
-    {isLoading ? (
-      <div className="h-64 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    ) : (
-      <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={weeklyTrendData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis dataKey="day" stroke="#6b7280" style={{ fontSize: '12px' }} />
-          <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              fontSize: '12px',
-            }}
-          />
-          <Legend />
-          <Bar dataKey="activities" name="Activities" fill="#2563eb" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="completed" name="Completed" fill="#16a34a" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    )}
-  </div>
+  <AnalyticsCard
+    title="Productivity trend"
+    isLoading={isLoading}
+    isEmpty={weeklyTrendData.length === 0}
+    emptyTitle="No activity in this period"
+    className="lg:col-span-2"
+  >
+    <ResponsiveContainer width="100%" height={280}>
+      <BarChart data={weeklyTrendData} barGap={4}>
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+        <XAxis dataKey="day" tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} tickLine={false} axisLine={false} />
+        <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'var(--muted)' }} />
+        <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+        <Bar dataKey="activities" name="Activities" fill="var(--primary)" radius={[6, 6, 0, 0]} maxBarSize={36} />
+        <Bar dataKey="completed" name="Completed" fill="var(--success)" radius={[6, 6, 0, 0]} maxBarSize={36} />
+      </BarChart>
+    </ResponsiveContainer>
+  </AnalyticsCard>
 );

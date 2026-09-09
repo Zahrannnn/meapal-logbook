@@ -1,6 +1,6 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
 import { ResponsiveContainer, PieChart as RechartsPie, Pie, Cell, Tooltip } from 'recharts';
+import { AnalyticsCard } from './AnalyticsCard';
 
 interface AnalyticsCompetencyDistributionProps {
   isLoading: boolean;
@@ -16,34 +16,53 @@ export const AnalyticsCompetencyDistribution: React.FC<AnalyticsCompetencyDistri
   isLoading,
   competencyDistribution,
 }) => (
-  <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
-    <h3 className="text-lg font-bold text-gray-900 mb-4">Competency Distribution</h3>
-    {isLoading ? (
-      <div className="h-64 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+  <AnalyticsCard
+    title="Competency distribution"
+    isLoading={isLoading}
+    isEmpty={competencyDistribution.length === 0}
+    emptyTitle="No competency data available"
+  >
+    <div className="flex flex-col items-center gap-4 sm:flex-row">
+      <div className="w-full max-w-[13rem] shrink-0">
+        <ResponsiveContainer width="100%" height={200}>
+          <RechartsPie>
+            <Pie
+              data={competencyDistribution}
+              cx="50%"
+              cy="50%"
+              innerRadius={55}
+              outerRadius={90}
+              labelLine={false}
+              dataKey="value"
+            >
+              {competencyDistribution.map((entry) => (
+                <Cell key={entry.competency} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'var(--popover)',
+                border: '1px solid var(--border)',
+                borderRadius: '0.75rem',
+                fontSize: '12px',
+                color: 'var(--popover-foreground)',
+              }}
+            />
+          </RechartsPie>
+        </ResponsiveContainer>
       </div>
-    ) : competencyDistribution.length > 0 ? (
-      <ResponsiveContainer width="100%" height={280}>
-        <RechartsPie>
-          <Pie
-            data={competencyDistribution}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            label={({ competency, percentage }) => `${competency}: ${percentage}%`}
-            outerRadius={90}
-            fill="#8884d8"
-            dataKey="value"
-          >
-            {competencyDistribution.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip />
-        </RechartsPie>
-      </ResponsiveContainer>
-    ) : (
-      <div className="h-64 flex items-center justify-center text-gray-500">No competency data available</div>
-    )}
-  </div>
+
+      <ul className="flex w-full flex-col gap-2">
+        {competencyDistribution.map((entry) => (
+          <li key={entry.competency} className="flex items-center justify-between gap-2 text-sm">
+            <span className="flex min-w-0 items-center gap-2 font-medium text-foreground">
+              <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: entry.color }} aria-hidden="true" />
+              <span className="truncate">{entry.competency}</span>
+            </span>
+            <span className="shrink-0 font-bold text-foreground tabular-nums">{entry.percentage}%</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </AnalyticsCard>
 );
