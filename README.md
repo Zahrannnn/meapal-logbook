@@ -82,3 +82,13 @@ src/
 ```
 
 Release notes live in [CHANGELOG.md](CHANGELOG.md). The app also shows them once per release, after sign-in.
+
+## Component size and splitting
+
+`~175` lines is the review trigger, not a rule to satisfy mechanically (see `my-refactor`: judgment over splitting for its own sake). A component may stay above it when the extra length is one of the following, each named where it occurs:
+
+- a **composition root** whose bulk is its typed prop contract — e.g. `DashboardPage` (wires hooks + extracted sections), `ReportsPage`;
+- a **single-concern unit** with no internal duplication — e.g. `ActivityRecurrenceSection`, `TeamModal`, `ReportScopeControls`;
+- a **modal shell** that composes already-extracted field sections — e.g. `ActivityModal`, `BulkUserImportModal`.
+
+Anything above the trigger for a reason *not* in this list should be split along its real axis of change: extract sub-components, hooks for non-trivial stateful logic, `constants/` for static maps, `utils/` only for pure helpers with a real boundary. Extraction deletes from the source — never leave a copy behind.
