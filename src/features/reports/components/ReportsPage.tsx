@@ -178,6 +178,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = (props) => {
                 <SelectValue placeholder="All projects" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All projects</SelectItem>
                 {props.projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.name}
@@ -268,7 +269,6 @@ export const ReportsPage: React.FC<ReportsPageProps> = (props) => {
       <RosterCard
         backendTeams={props.backendTeams}
         backendUsers={props.backendUsers}
-        selectedTeam={reports.selectedTeam}
         isExportingMembers={reports.isExportingMembers}
         onExportAllMembers={reports.exportAllMembersReport}
         onExportTeamMembers={reports.exportTeamMembersReport}
