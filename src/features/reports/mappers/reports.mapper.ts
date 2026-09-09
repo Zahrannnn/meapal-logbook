@@ -129,3 +129,11 @@ export const resolveEmployeeDisplayName = (
 
   return 'name' in employee ? employee.name : `${employee.firstName} ${employee.lastName}`;
 };
+
+/** Maps an activity status onto the shared Badge variants used across the reports UI. */
+export const statusBadgeVariant = (status: ActivityEntry['status']) => {
+  if (status === 'completed') return 'success' as const;
+  if (status === 'pending-approval') return 'warning' as const;
+  if (status === 'blocked') return 'destructive' as const;
+  return 'info' as const;
+};
