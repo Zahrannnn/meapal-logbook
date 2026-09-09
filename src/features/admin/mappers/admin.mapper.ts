@@ -29,8 +29,8 @@ export const getAdminTabs = (
       label: 'Users',
       icon: Users,
       count: counts.users,
-      activeClass: 'bg-purple-600 text-white shadow-lg',
-      badgeClass: 'bg-purple-100 text-purple-700',
+      activeClass: 'border-primary/40 bg-primary/10 text-primary',
+      badgeClass: 'bg-primary/15 text-primary',
       adminOnly: true,
     },
     {
@@ -38,8 +38,8 @@ export const getAdminTabs = (
       label: 'Teams',
       icon: Building2,
       count: counts.teams,
-      activeClass: 'bg-green-600 text-white shadow-lg',
-      badgeClass: 'bg-green-100 text-green-700',
+      activeClass: 'border-primary/40 bg-primary/10 text-primary',
+      badgeClass: 'bg-primary/15 text-primary',
       adminOnly: true,
     },
     {
@@ -47,8 +47,8 @@ export const getAdminTabs = (
       label: 'Projects',
       icon: FolderKanban,
       count: counts.projects,
-      activeClass: 'bg-blue-600 text-white shadow-lg',
-      badgeClass: 'bg-blue-100 text-blue-700',
+      activeClass: 'border-primary/40 bg-primary/10 text-primary',
+      badgeClass: 'bg-primary/15 text-primary',
       adminOnly: false,
     },
     {
@@ -56,8 +56,8 @@ export const getAdminTabs = (
       label: 'Competencies',
       icon: Award,
       count: counts.competencies,
-      activeClass: 'bg-orange-600 text-white shadow-lg',
-      badgeClass: 'bg-orange-100 text-orange-700',
+      activeClass: 'border-primary/40 bg-primary/10 text-primary',
+      badgeClass: 'bg-primary/15 text-primary',
       adminOnly: true,
     },
   ];

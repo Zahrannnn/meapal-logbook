@@ -13,10 +13,25 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ activeTab, tabs, onTabChan
       const Icon = tab.icon;
       const isActive = activeTab === tab.id;
       return (
-        <button key={tab.id} onClick={() => onTabChange(tab.id)} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold transition-all duration-200 ${isActive ? `${tab.activeClass} shadow-lg` : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200/80'}`}>
-          <Icon className="w-4 h-4" />
+        <button
+          key={tab.id}
+          onClick={() => onTabChange(tab.id)}
+          aria-pressed={isActive}
+          className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
+            isActive
+              ? `${tab.activeClass} shadow-xs`
+              : 'border-border bg-card text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground'
+          }`}
+        >
+          <Icon className="size-4" />
           {tab.label}
-          <span className={`px-2 py-0.5 rounded-lg text-xs font-bold ${isActive ? 'bg-white/30 text-white' : tab.badgeClass}`}>{tab.count}</span>
+          <span
+            className={`rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums ${
+              isActive ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            {tab.count}
+          </span>
         </button>
       );
     })}
