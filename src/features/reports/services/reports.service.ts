@@ -1,6 +1,7 @@
 export const reportsService = {
   downloadCsvFile: (filename: string, content: string) => {
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    // BOM so Excel opens the file as UTF-8.
+    const blob = new Blob(['\uFEFF', content], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);

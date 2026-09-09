@@ -68,8 +68,6 @@ export const VoiceActivityModal: React.FC<VoiceActivityModalProps> = ({
     try {
       const parsedActivity:any = await voiceService.parseActivity(audioBlob);
       toast.success('Voice processed successfully!');
-      console.log(parsedActivity);
-      // onActivityParsed(parsedActivity);
       onClose();
     } catch (error: any) {
       console.error('Failed to send voice activity:', error);

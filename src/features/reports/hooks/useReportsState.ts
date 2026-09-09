@@ -16,6 +16,7 @@ import {
   type ReportType,
 } from '../mappers/reports.mapper';
 import { reportsService } from '../services/reports.service';
+import { csvField } from '../utils/csv';
 import { reportsApi } from '../../../lib/api/reports.client';
 import type { FollowUpRow } from '../../../lib/api/types';
 
@@ -101,7 +102,7 @@ export const useReportsState = ({
   const exportAllMembersReport = async () => {
     setIsExportingMembers(true);
     try {
-      let csvContent = '\uFEFF';
+      let csvContent = '';
       csvContent += 'MEAPAL LOGBOOK - ALL TEAM MEMBERS REPORT\n';
       csvContent += `Generated: ${new Date().toLocaleString()}\n`;
       csvContent += `Total Members: ${backendUsers.length}\n\n`;
@@ -136,7 +137,7 @@ export const useReportsState = ({
       const team = backendTeams.find((entry) => entry.id.toString() === targetTeamId);
       const teamName = team?.name || 'All Teams';
       const teamMembers = targetTeamId === 'all' ? backendUsers : backendUsers.filter((user) => user.teamId.toString() === targetTeamId);
-      let csvContent = '\uFEFF';
+      let csvContent = '';
       csvContent += 'MEAPAL LOGBOOK - TEAM MEMBERS REPORT\n';
       csvContent += `Team: ${teamName}\n`;
       csvContent += `Generated: ${new Date().toLocaleString()}\n`;
@@ -165,7 +166,7 @@ export const useReportsState = ({
       const { start, end } = getReportDateRange(periodType, startDate, endDate);
       const dateRangeStr = `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} to ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
       const employeeName = getSelectedEmployeeName(selectedEmployee, backendUsers);
-      let csvContent = '\uFEFF';
+      let csvContent = '';
       if (reportType === 'employee' || reportType === 'payroll') {
         csvContent += `MEAPAL LOGBOOK - ACTIVITY REPORT\nEmployee: ${employeeName.replace(/_/g, ' ')}\nReport Period: ${dateRangeStr}\nGenerated: ${new Date().toLocaleString()}\n\n`;
         csvContent += 'Day,Date,Role,Activity Type,Project/Task,Description,Start Time,End Time,Duration (hours),Status\n';
@@ -189,12 +190,8 @@ export const useReportsState = ({
     try {
       const { start, end } = getReportDateRange(periodType, startDate, endDate);
       const employeeName = getSelectedEmployeeName(selectedEmployee, backendUsers);
-      const formatCsvValue = (value: string | number | undefined | null) => {
-        const text = value === undefined || value === null || value === '' ? 'N/A' : String(value);
-        return `"${text.replace(/"/g, '""')}"`;
-      };
 
-      let csvContent = '\uFEFF';
+      let csvContent = '';
       csvContent += `MEAPAL LOGBOOK - DETAILED ACTIVITY REPORT\nEmployee: ${employeeName.replace(/_/g, ' ')}\nReport Period: ${start.toLocaleDateString()} to ${end.toLocaleDateString()}\nGenerated: ${new Date().toLocaleString()}\n\n`;
       Object.entries(activitiesByEmployee).forEach(([employeeId, employeeActivities]) => {
         const employee = users.find((entry) => entry.id === employeeId) || backendUsers.find((entry) => entry.id.toString() === employeeId);
@@ -214,15 +211,15 @@ export const useReportsState = ({
         sortedActivities.forEach((activity) => {
           const project = projects.find((entry) => entry.id === activity.projectId);
           csvContent += [
-            formatCsvValue(getDayName(activity.date)),
-            formatCsvValue(activity.date),
-            formatCsvValue(project?.name || activity.project?.name || 'Unknown'),
-            formatCsvValue(activity.title),
-            formatCsvValue(activity.description || activity.notes),
-            formatCsvValue(activity.startTime),
-            formatCsvValue(activity.endTime),
+            csvField(getDayName(activity.date)),
+            csvField(activity.date),
+            csvField(project?.name || activity.project?.name || 'Unknown'),
+            csvField(activity.title),
+            csvField(activity.description || activity.notes),
+            csvField(activity.startTime),
+            csvField(activity.endTime),
             activity.duration.toFixed(1),
-            formatCsvValue(activity.status),
+            csvField(activity.status),
           ].join(',');
           csvContent += '\n';
         });
@@ -275,31 +272,22 @@ export const useReportsState = ({
     }
     setIsExporting(true);
     try {
-      const formatVal = (value: string | number | null | undefined): string => {
-        if (value === null || value === undefined) return '';
-        const text = String(value);
-        if (text.includes(',') || text.includes('"') || text.includes('\n') || text.includes('\r')) {
-          return `"${text.replace(/"/g, '""')}"`;
-        }
-        return text;
-      };
-
       const headers = ['Projet','Tâche','Responsable','Statut','Avancement (%)','Charges en J','Date Début','Deadline','Date de Fin','Points Bloquants','Commentaires'];
-      let csv = '\uFEFF';
+      let csv = '';
       csv += headers.join(',') + '\r\n';
       for (const row of followUpRows) {
         csv += [
-          formatVal(row.project),
-          formatVal(row.task),
-          formatVal(row.responsible),
-          formatVal(row.status),
+          csvField(row.project),
+          csvField(row.task),
+          csvField(row.responsible),
+          csvField(row.status),
           row.progress !== null && row.progress !== undefined ? String(row.progress) : '',
           row.chargesEnJ !== null && row.chargesEnJ !== undefined ? String(row.chargesEnJ) : '',
-          formatVal(row.dateDebut),
-          formatVal(row.deadline),
-          formatVal(row.dateDeFin),
-          formatVal(row.pointsBloquants),
-          formatVal(row.commentaires),
+          csvField(row.dateDebut),
+          csvField(row.deadline),
+          csvField(row.dateDeFin),
+          csvField(row.pointsBloquants),
+          csvField(row.commentaires),
         ].join(',') + '\r\n';
       }
       const { start, end } = getReportDateRange(periodType, startDate, endDate);
