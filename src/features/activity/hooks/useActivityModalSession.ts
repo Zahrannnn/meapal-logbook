@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { ActivityEntry } from '../../../entities';
+import type { ActivityDraft } from '../model/activity.types';
 import { logEvent } from '../../../lib/telemetry';
 
 export type ActivityModalMode = 'edit' | 'edit-recurring' | 'create';
@@ -20,8 +20,8 @@ export const useActivityModalSession = ({
   mode,
 }: {
   isOpen: boolean;
-  activity: ActivityEntry;
-  onChange: (activity: ActivityEntry) => void;
+  activity: ActivityDraft;
+  onChange: (activity: ActivityDraft) => void;
   onClose: () => void;
   onSave: () => void;
   onSaveDraft?: () => void;

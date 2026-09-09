@@ -1,4 +1,5 @@
 import type { ActivityDraft } from './activity.types';
+import { normalizeActivityDraft } from './activity.schema';
 
 // The in-progress create draft survives refreshes and crashes: written on every
 // change (with a timestamp, for the recovery banner), restored on app start,
