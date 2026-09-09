@@ -249,7 +249,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           onToday={goToToday}
           onDateChange={onDateChange}
         />
-        <Button onClick={onAddActivity} className="rounded-xl">
+        <Button onClick={onAddActivity} className="rounded-xl" data-tour="cta">
           <PlusIcon data-icon="inline-start" />
           Log activity
         </Button>
