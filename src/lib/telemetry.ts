@@ -37,7 +37,6 @@ declare global {
 export function logEvent(name: TelemetryEventName, payload: TelemetryPayload = {}): void {
   const entry = { event: name, ...payload, ts: new Date().toISOString() };
 
-  // eslint-disable-next-line no-console
   console.info('[telemetry]', entry);
 
   if (typeof window !== 'undefined') {
