@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { toast } from '@/lib/toast';
 import type { ActivityEntry } from '../../../entities';
 import { toMinutes } from '../../../lib/time';
-import { addDraft, removeDraft, type StoredDraft } from '../model/drafts.storage';
+import { addDraft, removeDraft, isDefaultDraft, type StoredDraft } from '../model/drafts.storage';
 import { createActivityDraftFromEntry, createDefaultActivityDraft } from '../model/activity.draft';
 import { normalizeActivityDraft } from '../model/activity.schema';
 import type { ActivityDraft, ActivitySubmitOptions } from '../model/activity.types';
 import { activityService } from '../services/activity.service';
 import { logEvent } from '../../../lib/telemetry';
+import { readStoredRecovery, storeRecovery } from '../model/recovery.storage';
 
 type CreatedActivity = Awaited<ReturnType<typeof activityService.submit>>;
 
@@ -35,51 +36,6 @@ interface UseActivityFormOptions {
   /** Removes or restores the optimistic entry when the network call fails. */
   onOptimisticRollback?: (tempId: string) => void;
 }
-
-// The in-progress create draft survives refreshes and crashes: written on every
-// change (with a timestamp, for the recovery banner), restored on app start,
-// cleared on save, discard, or switching to edit. Explicit "Save as draft" work
-// lives separately in drafts.storage.
-const DRAFT_STORAGE_KEY = 'logbook:activity-draft';
-
-interface StoredRecovery {
-  savedAt: string;
-  draft: ActivityDraft;
-}
-
-// Both sides go through the same normalize pass — zod's output key order can
-// differ from the raw default literal, and string comparison needs exact match.
-const EMPTY_DRAFT_JSON = JSON.stringify(normalizeActivityDraft(createDefaultActivityDraft()));
-
-const isDefaultDraft = (draft: ActivityDraft) =>
-  JSON.stringify(normalizeActivityDraft(draft)) === EMPTY_DRAFT_JSON;
-
-const readStoredRecovery = (): StoredRecovery | null => {
-  try {
-    const stored = localStorage.getItem(DRAFT_STORAGE_KEY);
-    if (!stored) return null;
-    const parsed = JSON.parse(stored) as Partial<StoredRecovery> | ActivityDraft;
-    // Legacy shape: the raw draft without a timestamp.
-    if (typeof (parsed as StoredRecovery).savedAt !== 'string') {
-      return { savedAt: new Date().toISOString(), draft: normalizeActivityDraft(parsed as ActivityDraft) };
-    }
-    return { savedAt: (parsed as StoredRecovery).savedAt, draft: normalizeActivityDraft((parsed as StoredRecovery).draft) };
-  } catch {
-    return null;
-  }
-};
-
-const storeRecovery = (recovery: StoredRecovery | null) => {
-  try {
-    if (recovery) {
-      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(recovery));
-    } else {
-      localStorage.removeItem(DRAFT_STORAGE_KEY);
-    }
-  } catch {
-    // storage unavailable (private mode) — the draft just won't persist
-  }
-};
 
 export const useActivityForm = ({
   selectedDate,

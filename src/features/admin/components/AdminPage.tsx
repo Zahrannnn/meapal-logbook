@@ -1,10 +1,9 @@
 import React from 'react';
-import { Award, Building2, Edit2, Loader2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
 import { AdminProjectsGrid } from './AdminProjectsGrid';
 import { BulkUserImportModal } from './BulkUserImportModal';
 import { ProjectDetailModal } from './ProjectDetailModal';
+import { CompetenciesTable, TeamsTable, UsersTable } from './AdminEntityTables';
 import type {
   BackendCompetency,
   BackendProject,
@@ -90,102 +89,22 @@ export const AdminPage: React.FC<AdminPageProps> = ({
 
       <motion.div key={admin.activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
         {admin.activeTab === 'users' && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 border-b border-border">
-                <tr>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">User</th>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Email</th>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Team</th>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Role</th>
-                  <th className="px-5 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {admin.filteredUsers.map((user) => (
-                  <tr key={user.id} className="transition-colors hover:bg-muted/40">
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-3">
-                        <span className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-xs font-extrabold text-primary">
-                          {user.firstName[0]}{user.lastName[0]}
-                        </span>
-                        <div>
-                          <p className="font-semibold text-foreground">{user.firstName} {user.lastName}</p>
-                          <p className="text-xs font-medium text-muted-foreground">@{user.username}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3 text-muted-foreground">{user.email}</td>
-                    <td className="px-5 py-3">
-                      <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">
-                        {backendTeams.find((team) => team.id === user.teamId)?.name || 'Unknown'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3">
-                      <Badge variant={user.role === 'admin' ? 'destructive' : user.role === 'project_manager' ? 'info' : 'secondary'} className="capitalize">
-                        {user.role.replace('_', ' ')}
-                      </Badge>
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => onEditUser(user)} aria-label={`Edit ${user.firstName}`} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-                          <Edit2 className="size-4" />
-                        </button>
-                        <button onClick={() => void admin.handleDeleteUser(user.id)} disabled={admin.deletingId === user.id} aria-label={`Delete ${user.firstName}`} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50">
-                          {admin.deletingId === user.id ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <UsersTable
+            users={admin.filteredUsers}
+            backendTeams={backendTeams}
+            deletingId={admin.deletingId}
+            onEditUser={onEditUser}
+            onDeleteUser={admin.handleDeleteUser}
+          />
         )}
 
         {admin.activeTab === 'teams' && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 border-b border-border">
-                <tr>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Team</th>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Description</th>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Members</th>
-                  <th className="px-5 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {admin.filteredTeams.map((team) => (
-                  <tr key={team.id} className="transition-colors hover:bg-muted/40">
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-3">
-                        <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                          <Building2 className="size-4" />
-                        </span>
-                        <p className="font-semibold text-foreground">{team.name}</p>
-                      </div>
-                    </td>
-                    <td className="max-w-xs truncate px-5 py-3 text-muted-foreground">{team.description || '-'}</td>
-                    <td className="px-5 py-3">
-                      <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-foreground tabular-nums">
-                        {team._count?.users || 0} members
-                      </span>
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => onEditTeam(team)} aria-label={`Edit ${team.name}`} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-                          <Edit2 className="size-4" />
-                        </button>
-                        <button onClick={() => void admin.handleDeleteTeam(team.id)} disabled={admin.deletingId === `team-${team.id}`} aria-label={`Delete ${team.name}`} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50">
-                          {admin.deletingId === `team-${team.id}` ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <TeamsTable
+            teams={admin.filteredTeams}
+            deletingId={admin.deletingId}
+            onEditTeam={onEditTeam}
+            onDeleteTeam={admin.handleDeleteTeam}
+          />
         )}
 
         {admin.activeTab === 'projects' && (
@@ -200,44 +119,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({
         )}
 
         {admin.activeTab === 'competencies' && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 border-b border-border">
-                <tr>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Competency</th>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Description</th>
-                  <th className="px-5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Created</th>
-                  <th className="px-5 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {admin.filteredCompetencies.map((competency) => (
-                  <tr key={competency.id} className="transition-colors hover:bg-muted/40">
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-3">
-                        <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                          <Award className="size-4" />
-                        </span>
-                        <p className="font-semibold text-foreground">{competency.name}</p>
-                      </div>
-                    </td>
-                    <td className="max-w-xs truncate px-5 py-3 text-muted-foreground">{competency.description || '-'}</td>
-                    <td className="px-5 py-3 text-muted-foreground">{new Date(competency.createdAt).toLocaleDateString()}</td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => onEditCompetency(competency)} aria-label={`Edit ${competency.name}`} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-                          <Edit2 className="size-4" />
-                        </button>
-                        <button onClick={() => void admin.handleDeleteCompetency(competency.id)} disabled={admin.deletingId === `comp-${competency.id}`} aria-label={`Delete ${competency.name}`} className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50">
-                          {admin.deletingId === `comp-${competency.id}` ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <CompetenciesTable
+            competencies={admin.filteredCompetencies}
+            deletingId={admin.deletingId}
+            onEditCompetency={onEditCompetency}
+            onDeleteCompetency={admin.handleDeleteCompetency}
+          />
         )}
       </motion.div>
 

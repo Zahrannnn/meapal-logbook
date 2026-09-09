@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { X, Upload, Users, CheckCircle2, Loader2, FileText, AlertCircle } from 'lucide-react';
+import { X, Upload, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BackendTeam, cookies } from '../../../lib/api';
+import { BackendTeam } from '../../../lib/api';
 import { toast } from '@/lib/toast';
+import { uploadUsersCsv } from '../services/bulk-import.service';
+import { UploadPicker, UploadResultView, UploadingState } from './BulkImportStates';
 
 interface BulkUserImportModalProps {
   isOpen: boolean;
@@ -11,7 +13,7 @@ interface BulkUserImportModalProps {
   onSuccess: () => void;
 }
 
-interface UploadResult {
+export interface UploadResult {
   success: boolean;
   message: string;
   successCount?: number;
@@ -56,25 +58,7 @@ export const BulkUserImportModal: React.FC<BulkUserImportModalProps> = ({
     setUploadResult(null);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const API_BASE_URL = `http://${window.location.hostname}:3000/api/v1`;
-      const token = cookies.get('authToken');
-
-      const response = await fetch(`${API_BASE_URL}/users/upload-users-csv`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Upload failed');
-      }
+      const data = await uploadUsersCsv(file);
 
       setUploadResult({
         success: true,
@@ -82,7 +66,7 @@ export const BulkUserImportModal: React.FC<BulkUserImportModalProps> = ({
         errors: data.data?.errors || []
       });
 
-      if (data.data?.successCount > 0 || data.data?.success > 0) {
+      if (data.data?.successCount || data.data?.success) {
         onSuccess();
       }
     } catch (error: unknown) {
@@ -145,126 +129,38 @@ export const BulkUserImportModal: React.FC<BulkUserImportModalProps> = ({
 
             {/* Content */}
             <div className="p-6 space-y-6 overflow-y-auto flex-1">
-
-              {/* File Upload */}
               {!uploadResult && (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Upload CSV File
-                  </label>
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all duration-200"
-                  >
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-700 font-medium mb-1">
-                      {file ? file.name : 'Click to upload or drag and drop'}
-                    </p>
-                    <p className="text-sm text-gray-500">CSV files only</p>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".csv"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                  </div>
-                  {file && !isUploading && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-8 h-8 text-blue-600" />
-                          <div>
-                            <p className="font-semibold text-gray-900">{file.name}</p>
-                            <p className="text-sm text-gray-500">{(file.size / 1024).toFixed(2)} KB</p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={handleReset}
-                          className="text-red-600 hover:text-red-700 text-sm font-semibold"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <UploadPicker
+                  file={file}
+                  isUploading={isUploading}
+                  fileInputRef={fileInputRef}
+                  onFileSelect={handleFileSelect}
+                  onReset={handleReset}
+                />
               )}
 
-              {/* Uploading */}
-              {isUploading && (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Loader2 className="w-16 h-16 text-purple-600 animate-spin mb-4" />
-                  <p className="text-gray-900 font-semibold text-lg mb-1">Uploading and processing...</p>
-                  <p className="text-gray-500 text-sm">Please wait while the backend imports users</p>
-                </div>
-              )}
+              {isUploading && <UploadingState />}
 
-              {/* Results */}
-              {uploadResult && (
-                <div className="space-y-4">
-                  {uploadResult.success ? (
-                    <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-                      <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-3" />
-                      <h3 className="text-xl font-bold text-green-900 mb-2">Import Successful</h3>
-                      <p className="text-green-700 mb-2">{uploadResult.message}</p>
-                      {uploadResult.successCount !== undefined && (
-                        <p className="text-green-600 font-semibold">
-                          {uploadResult.successCount} users imported successfully
-                          {uploadResult.failedCount && uploadResult.failedCount > 0 
-                            ? `, ${uploadResult.failedCount} failed` 
-                            : ''}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-                      <AlertCircle className="w-16 h-16 text-red-600 mx-auto mb-3" />
-                      <h3 className="text-xl font-bold text-red-900 mb-2">Import Failed</h3>
-                      <p className="text-red-700">{uploadResult.message}</p>
-                    </div>
-                  )}
-
-                  {uploadResult.errors && uploadResult.errors.length > 0 && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 max-h-64 overflow-y-auto">
-                      <h4 className="font-semibold text-red-900 mb-2">Errors:</h4>
-                      <ul className="text-sm text-red-700 space-y-1">
-                        {uploadResult.errors.map((error, idx) => (
-                          <li key={idx}>• {error}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={handleReset}
-                    className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200"
-                  >
-                    Upload Another File
-                  </button>
-                </div>
-              )}
+              {uploadResult && <UploadResultView result={uploadResult} onReset={handleReset} />}
             </div>
 
             {/* Footer */}
-            {/* {!uploadResult && file && !isUploading && ( */}
-              <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
-                <button
-                  onClick={handleReset}
-                  className="flex-1 px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 border border-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpload}
-                  disabled={isUploading || teams.length === 0}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-600/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  <Upload className="w-5 h-5" />
-                  Upload
-                </button>
-              </div>
-            {/* )} */}
+            <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={handleReset}
+                className="flex-1 px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 border border-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpload}
+                disabled={isUploading || teams.length === 0}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-600/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Upload className="w-5 h-5" />
+                Upload
+              </button>
+            </div>
 
             {uploadResult && (
               <div className="p-6 bg-gray-50 border-t border-gray-100">

@@ -3,7 +3,7 @@ import type { BackendTeam, BackendUser } from '../../../lib/api';
 
 type UserRole = 'admin' | 'project_manager' | 'user';
 
-interface UserFormData {
+export interface UserFormData {
   email: string;
   username: string;
   password: string;

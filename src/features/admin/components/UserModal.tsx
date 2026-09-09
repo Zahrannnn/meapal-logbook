@@ -1,8 +1,10 @@
 import React from 'react';
-import { X, Save, Loader2, User, Mail, Lock, Users } from 'lucide-react';
+import { X, Save, Loader2, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BackendUser, BackendTeam } from '../../../lib/api';
 import { useUserModalState } from '../hooks/useUserModalState';
+import { UserAccessFields, UserIdentityFields } from './UserModalFields';
+import { UserPasswordFields } from './UserPasswordFields';
 
 interface UserModalProps {
   isOpen: boolean;
@@ -86,181 +88,16 @@ export const UserModal: React.FC<UserModalProps> = ({
                 </div>
               )}
 
-              {/* Name Fields */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    First Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:outline-none transition-all duration-200"
-                    placeholder="John"
-                    required
-                    disabled={isSubmitting}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Last Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:outline-none transition-all duration-200"
-                    placeholder="Doe"
-                    required
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
+              <UserIdentityFields formData={formData} setFormData={setFormData} isSubmitting={isSubmitting} />
 
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  <Mail className="w-4 h-4 inline mr-1" />
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-600 focus:outline-none"
-                  placeholder="abc@corelia.ai"
-                  required
-                  disabled={isSubmitting}
-                />
-                {/* <p className="text-xs text-gray-500 mt-1">Format: 3 letters + @corelia.ai (e.g. abc@corelia.ai)</p> */}
-              </div>
+              <UserPasswordFields
+                formData={formData}
+                setFormData={setFormData}
+                isEditing={isEditing}
+                isSubmitting={isSubmitting}
+              />
 
-              {/* Username */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Username *
-                </label>
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-600 focus:outline-none"
-                  placeholder="johndoe"
-                  required
-                  disabled={isSubmitting}
-                />
-              </div>
-
-              {/* Password Fields */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    <Lock className="w-4 h-4 inline mr-1" />
-                    Password {!isEditing && '*'}
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-600 focus:outline-none"
-                    placeholder={isEditing ? '(unchanged)' : '••••••••'}
-                    required={!isEditing}
-                    disabled={isSubmitting}
-                  />
-                  {formData.password && (
-                    <div className="mt-2 space-y-1">
-                      <p className={`text-xs flex items-center gap-1 ${formData.password.length >= 8 ? 'text-green-600' : 'text-gray-400'}`}>
-                        {formData.password.length >= 8 ? '✓' : '○'} At least 8 characters
-                      </p>
-                      <p className={`text-xs flex items-center gap-1 ${/[A-Z]/.test(formData.password) ? 'text-green-600' : 'text-gray-400'}`}>
-                        {/[A-Z]/.test(formData.password) ? '✓' : '○'} One uppercase letter
-                      </p>
-                      <p className={`text-xs flex items-center gap-1 ${/[a-z]/.test(formData.password) ? 'text-green-600' : 'text-gray-400'}`}>
-                        {/[a-z]/.test(formData.password) ? '✓' : '○'} One lowercase letter
-                      </p>
-                      <p className={`text-xs flex items-center gap-1 ${/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(formData.password) ? 'text-green-600' : 'text-gray-400'}`}>
-                        {/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(formData.password) ? '✓' : '○'} One special character
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Confirm Password {!isEditing && '*'}
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-600 focus:outline-none"
-                    placeholder="••••••••"
-                    required={!isEditing}
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
-
-              {/* Team and Role */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    <Users className="w-4 h-4 inline mr-1" />
-                    Team *
-                  </label>
-                  <select
-                    value={formData.teamId}
-                    onChange={(e) => setFormData({ ...formData, teamId: parseInt(e.target.value) })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-600 focus:outline-none"
-                    required
-                    disabled={isSubmitting}
-                  >
-                    <option value={0}>Select Team</option>
-                    {teams.map((team) => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Role *
-                  </label>
-                  <select
-                    value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'project_manager' | 'user' })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-600 focus:outline-none"
-                    required
-                    disabled={isSubmitting}
-                  >
-                    <option value="user">Team Member</option>
-                    <option value="project_manager">Project Manager</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formData.role === 'admin' && '• Full access to all features'}
-                    {formData.role === 'project_manager' && '• Can manage projects, view reports, assign tasks'}
-                    {formData.role === 'user' && '• Can log activities and view own data'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Hire Date */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Hire Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.hireDate}
-                  onChange={(e) => setFormData({ ...formData, hireDate: e.target.value })}
-                  max={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:outline-none transition-all duration-200"
-                  disabled={isSubmitting}
-                />
-                {/* <p className="text-xs text-gray-500 mt-1">Cannot be a future date</p> */}
-              </div>
+              <UserAccessFields formData={formData} setFormData={setFormData} teams={teams} isSubmitting={isSubmitting} />
             </form>
 
             {/* Footer */}

@@ -1,71 +1,19 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { format } from 'date-fns';
-import { PlusIcon } from 'lucide-react';
+import React from 'react';
 import { ActivityEntry, User, Project } from '../../../entities';
-import { Button } from '@/components/ui/button';
-import { HistoryIcon } from 'lucide-react';
 import { useDashboardActivityFeed } from '../hooks/useDashboardActivityFeed';
-import { useDashboardDateNavigation } from '../hooks/useDashboardDateNavigation';
+import { useDashboardTelemetry } from '../hooks/useDashboardTelemetry';
+import { useMissedDayNudge } from '../hooks/useMissedDayNudge';
+import { usePayPeriodProgress } from '../hooks/usePayPeriodProgress';
 import { DashboardTodayHero } from './DashboardTodayHero';
 import { DashboardTrendChart } from './DashboardTrendChart';
-import { DashboardDateSelector } from './DashboardDateSelector';
+import { DashboardDayControls } from './DashboardDayControls';
 import { DashboardActivityTimeline } from './DashboardActivityTimeline';
 import { DashboardPendingApprovals } from './DashboardPendingApprovals';
 import { DashboardMissedDayNudge } from './DashboardMissedDayNudge';
 import { DashboardPeriodProgress } from './DashboardPeriodProgress';
-import { logEvent } from '../../../lib/telemetry';
+import { DraftRecoveryBanner, PeriodLoadingOverlay } from './DashboardOverlays';
 import { calculateActualHours } from '../../../lib/utils';
-import {
-  DAILY_STRETCH_HOURS,
-  DAILY_TARGET_HOURS,
-  getPayPeriod,
-  getPeriodStretchHours,
-  getPeriodTargetHours,
-  getPeriodWorkdays,
-  getElapsedWorkdays,
-  isWorkingDay,
-} from '../../../lib/payPeriod';
-import { formatDateValue } from '@/components/date-picker';
-
-const NUDGE_DISMISS_KEY = 'logbook:nudge-dismissed';
-
-// StrictMode double-mounts effects in dev; dedupe so one page view = one event.
-let lastDashboardViewAt = 0;
-
-// Most recent working day (Sun–Thu) with no activity, walking back from yesterday.
-// Friday/Saturday are skipped, and the walk never goes before `lowerBound` (the period
-// start), where we have no data. Returns null when there is no gap to recover.
-const findMissedWorkday = (activities: ActivityEntry[], lowerBound: Date): Date | null => {
-  const cursor = new Date();
-  cursor.setHours(0, 0, 0, 0);
-
-  for (let back = 0; back < 7; back += 1) {
-    cursor.setDate(cursor.getDate() - 1);
-    if (!isWorkingDay(cursor)) continue;
-    if (cursor < lowerBound) return null;
-
-    const dateStr = formatDateValue(cursor);
-    if (!activities.some((activity) => activity.date === dateStr)) {
-      return new Date(cursor);
-    }
-  }
-
-  return null;
-};
-
-/** Three pulsing 'log entries' — the motif for a period being loaded. */
-const LogEntryBars = () => (
-  <span className="flex items-end gap-[3px] h-4" aria-hidden="true">
-    {[0, 1, 2].map((index) => (
-      <span
-        key={index}
-        className="w-[5px] rounded-[2px] bg-primary animate-pulse"
-        style={{ height: `${7 + index * 3}px`, animationDelay: `${index * 180}ms`, animationDuration: '900ms' }}
-      />
-    ))}
-  </span>
-);
+import { DAILY_STRETCH_HOURS, DAILY_TARGET_HOURS, getPeriodTargetHours } from '../../../lib/payPeriod';
 
 interface DashboardPageProps {
   currentUser: User;
@@ -138,149 +86,36 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     filterProject,
   });
 
-  const { goToPreviousDay, goToNextDay, goToToday } = useDashboardDateNavigation({
+  useDashboardTelemetry(selectedDate);
+
+  const { missedWorkday, showNudge, dismiss: dismissNudge, logNow: logNudgeNow } = useMissedDayNudge({
+    activities,
     selectedDate,
-    onDateChange,
+    onLogNow: (missedDay) => {
+      onDateChange(missedDay);
+      onAddActivity();
+    },
   });
 
-  // Telemetry: view on mount, date navigation afterwards.
-  const previousDateRef = useRef(selectedDate);
-  useEffect(() => {
-    if (previousDateRef.current !== selectedDate) {
-      previousDateRef.current = selectedDate;
-      logEvent('date_change', { to: formatDateValue(selectedDate) });
-    }
-  }, [selectedDate]);
-  useEffect(() => {
-    const now = Date.now();
-    if (now - lastDashboardViewAt > 1000) {
-      lastDashboardViewAt = now;
-      logEvent('dashboard_view', { selected_date: formatDateValue(selectedDate) });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Recovery nudge: only on the today view (the loaded period guarantees the data) and
-  // never on Friday/Saturday — rest days produce no alerts.
-  const [dismissedDate, setDismissedDate] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem(NUDGE_DISMISS_KEY);
-    } catch {
-      return null;
-    }
-  });
-  const viewingToday = selectedDate.toDateString() === new Date().toDateString();
-  const todayIsRestDay = !isWorkingDay(new Date());
-  const payPeriod = useMemo(() => getPayPeriod(selectedDate), [selectedDate]);
-  const missedWorkday = viewingToday && !todayIsRestDay ? findMissedWorkday(activities, payPeriod.start) : null;
-  const showNudge = !!missedWorkday && dismissedDate !== formatDateValue(missedWorkday);
-
-  const handleNudgeDismiss = (missedDay: Date) => {
-    const dateStr = formatDateValue(missedDay);
-    logEvent('nudge_dismiss', { date: dateStr });
-    try {
-      localStorage.setItem(NUDGE_DISMISS_KEY, dateStr);
-    } catch {
-      // storage unavailable (private mode) — dismissal just won't persist
-    }
-    setDismissedDate(dateStr);
-  };
-
-  const handleNudgeLogNow = (missedDay: Date) => {
-    logEvent('nudge_click', { date: formatDateValue(missedDay) });
-    onDateChange(missedDay);
-    onAddActivity();
-  };
-
-  // Pay-period progress (21st → 20th) for whichever period the selected date belongs to:
-  // the dashboard fetch loads exactly that period.
-  const periodKey = `${currentUser.id}:${payPeriod.startStr}`;
-  const periodCovered = loadedPeriodKey === periodKey;
-  const ownActivities = useMemo(
-    () => activities.filter((activity) => !activity.employeeName || activity.employeeName === currentUser.name),
-    [activities, currentUser.name],
-  );
-  const periodWorkdays = useMemo(() => getPeriodWorkdays(payPeriod), [payPeriod]);
-  const elapsedWorkdays = useMemo(
-    () => getElapsedWorkdays(periodWorkdays, payPeriod),
-    [periodWorkdays, payPeriod],
-  );
+  const { payPeriod, periodCovered, ownActivities, periodWorkdays, elapsedWorkdays } =
+    usePayPeriodProgress({ currentUser, activities, selectedDate, loadedPeriodKey });
 
   return (
     <div className="flex flex-col gap-6 lg:gap-8">
       {showNudge && missedWorkday && (
         <DashboardMissedDayNudge
           missedDay={missedWorkday}
-          onLogNow={() => handleNudgeLogNow(missedWorkday)}
-          onDismiss={() => handleNudgeDismiss(missedWorkday)}
+          onLogNow={() => logNudgeNow(missedWorkday)}
+          onDismiss={() => dismissNudge(missedWorkday)}
         />
       )}
-      {/* Recovery: an auto-saved in-progress activity from a previous session. */}
       {isDraftRestored && (
-        <div
-          className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border bg-muted/40 px-4 py-2.5"
-          role="status"
-        >
-          <HistoryIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <p className="min-w-0 flex-1 text-sm font-medium text-foreground">
-            You have an unfinished activity. Continue where you left off?
-          </p>
-          {onDiscardRecovery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDiscardRecovery}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Discard
-            </Button>
-          )}
-          <Button size="sm" onClick={onAddActivity}>
-            Continue
-          </Button>
-        </div>
+        <DraftRecoveryBanner onContinue={onAddActivity} onDiscard={onDiscardRecovery} />
       )}
-      {/* The day controls and the primary CTA share the page's top row — sticky under the app header. */}
-      <div className="sticky top-[52px] z-20 -mx-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 bg-background/90 px-4 py-2 backdrop-blur-sm sm:top-14 lg:-mx-2 lg:rounded-b-xl lg:px-2">
-        <DashboardDateSelector
-          selectedDate={selectedDate}
-          onPreviousDay={goToPreviousDay}
-          onNextDay={goToNextDay}
-          onToday={goToToday}
-          onDateChange={onDateChange}
-        />
-        <Button onClick={onAddActivity} className="rounded-xl" data-tour="cta">
-          <PlusIcon data-icon="inline-start" />
-          Log activity
-        </Button>
-      </div>
+      <DashboardDayControls selectedDate={selectedDate} onDateChange={onDateChange} onAddActivity={onAddActivity} />
       {/* Stay mounted while a new pay period loads; the switch gets its own moment. */}
       <div className="relative" aria-busy={isActivitiesRefreshing}>
-        <AnimatePresence>
-          {isActivitiesRefreshing && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
-              className="absolute inset-0 z-10 flex items-start justify-center bg-background/60 backdrop-blur-[2px] rounded-xl"
-            >
-              <motion.div
-                initial={{ y: -10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -6, opacity: 0 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="mt-16 flex items-center gap-3 rounded-full border bg-card px-4 py-2.5 shadow-card"
-              >
-                <LogEntryBars />
-                <span className="text-sm font-bold text-foreground tabular-nums">
-                  {format(payPeriod.start, 'MMM d')} – {format(payPeriod.end, 'MMM d')}
-                </span>
-                <span className="text-sm text-muted-foreground">loading pay period…</span>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <PeriodLoadingOverlay isActive={isActivitiesRefreshing} period={payPeriod} />
         <div className="flex flex-col gap-6 lg:gap-8">
           {periodCovered && (
             <>
@@ -305,7 +140,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   targetHours={getPeriodTargetHours(payPeriod)}
                   workdays={periodWorkdays}
                   elapsedWorkdays={elapsedWorkdays.length}
-                />              </div>
+                />
+              </div>
 
               <DashboardActivityTimeline
                 activities={todayActivities}

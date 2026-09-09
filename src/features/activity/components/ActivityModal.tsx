@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { format } from 'date-fns';
 import { CalendarDays, Loader2Icon, SaveIcon } from 'lucide-react';
 import {
@@ -11,12 +11,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '../../../shared/ui/dialogs/ConfirmDialog';
-import { cn } from '@/lib/utils';
 import { logEvent } from '../../../lib/telemetry';
 import type { ActivityModalProps } from '../model/activity.types';
 import { createDefaultActivityDraft } from '../model/activity.draft';
 import { isDefaultDraft } from '../model/drafts.storage';
 import { useActivityModalState } from '../hooks/useActivityModalState';
+import { useActivityModalSession } from '../hooks/useActivityModalSession';
+import { ActivityTitleHero } from './ActivityTitleHero';
 import { ActivityCoreFields } from './ActivityCoreFields';
 import { ActivityStatusSelector } from './ActivityStatusSelector';
 import { ActivityProgressFields } from './ActivityProgressFields';
@@ -56,61 +57,23 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
   // Parking requires something to park; only create-mode drafts are listed.
   const canSaveDraft = mode === 'create' && !isDefaultDraft(activity);
 
-  // Telemetry: open on show; save at submit; cancel on any close that wasn't a save.
-  const savedRef = useRef(false);
-  const initialDraftRef = useRef('');
-  const [isDiscardOpen, setIsDiscardOpen] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{ title?: string; project?: string }>({});
-
-  useEffect(() => {
-    if (isOpen) {
-      savedRef.current = false;
-      initialDraftRef.current = JSON.stringify(activity);
-      setValidationErrors({});
-      setIsDiscardOpen(false);
-      logEvent('modal_open', { mode });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-
-  const isDirty = JSON.stringify(activity) !== initialDraftRef.current;
-
-  const requestClose = () => {
-    if (isSubmitting) return;
-    // Escape and backdrop clicks must not silently destroy typed content.
-    if (!savedRef.current && isDirty) {
-      setIsDiscardOpen(true);
-      return;
-    }
-    if (!savedRef.current) {
-      logEvent('modal_cancel', { mode });
-    }
-    onClose();
-  };
-
-  const handleSaveDraft = () => {
-    if (isSubmitting) return;
-    logEvent('modal_draft_saved', { mode });
-    onSaveDraft?.();
-  };
-
-  const handleSave = () => {
-    const missing: { title?: string; project?: string } = {};
-    if (!activity.title) missing.title = 'Give this activity a title';
-    if (!activity.projectId) missing.project = 'Pick a project';
-
-    if (missing.title || missing.project) {
-      setValidationErrors(missing);
-      const first = document.getElementById(missing.title ? 'activity-title' : 'activity-project');
-      first?.focus();
-      first?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      return;
-    }
-
-    savedRef.current = true;
-    logEvent('modal_save', { mode });
-    onSave();
-  };
+  const {
+    isDiscardOpen,
+    setIsDiscardOpen,
+    validationErrors,
+    requestClose,
+    handleSaveDraft,
+    handleSave,
+  } = useActivityModalSession({
+    isOpen,
+    activity,
+    onChange,
+    onClose,
+    onSave,
+    onSaveDraft,
+    isSubmitting,
+    mode,
+  });
 
   return (
     <Dialog
@@ -151,33 +114,12 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
             handleSave();
           }}
         >
-          {/* The hero: the placeholder is the question, so the input needs no label. */}
-          <div
-            className={cn(
-              'border-b pb-2 transition-colors',
-              validationErrors.title && !activity.title
-                ? 'border-destructive'
-                : 'border-border focus-within:border-foreground/30',
-            )}
-          >
-            {/* Bare input — the shadcn Input's base `md:text-sm` would shrink the hero. */}
-            <input
-              id="activity-title"
-              type="text"
-              value={activity.title}
-              onChange={(event) => onChange({ ...activity, title: event.target.value })}
-              placeholder={isEditing ? 'Activity title' : 'What did you work on?'}
-              aria-label="Activity title"
-              aria-invalid={!!(validationErrors.title && !activity.title)}
-              className="w-full bg-transparent text-xl font-bold tracking-tight text-foreground outline-none placeholder:font-semibold placeholder:text-muted-foreground/50"
-              autoFocus
-            />
-            {validationErrors.title && !activity.title && (
-              <p className="text-xs font-semibold text-destructive" role="alert">
-                {validationErrors.title}
-              </p>
-            )}
-          </div>
+          <ActivityTitleHero
+            title={activity.title}
+            onTitleChange={(title) => onChange({ ...activity, title })}
+            isEditing={isEditing}
+            titleError={validationErrors.title && !activity.title ? validationErrors.title : undefined}
+          />
 
           <ActivityCoreFields
             activity={activity}
