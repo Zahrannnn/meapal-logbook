@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ActivityEntry } from '../entities';
 import type { BackendCompetency, BackendTeam, BackendUser } from '../lib/api';
 import type { EditableProject } from './appMappers';
@@ -57,7 +57,22 @@ export const useActivityReportUiState = () => {
     markWhatsNewSeen();
   };
 
+  // Each workspace tab is a real URL route: /, /analytics, /reports, /admin.
+  // Deep links and back/forward are supported through the History API.
+  const routeToView = (pathname: string): ViewMode => {
+    const path = pathname.replace(/\/+$/, '').replace(/^\//, '').toLowerCase();
+    if (path === 'analytics') return 'analytics';
+    if (path === 'reports') return 'reports';
+    if (path === 'admin') return 'admin';
+    return 'dashboard';
+  };
+
+  const viewToRoute = (mode: ViewMode): string => (mode === 'dashboard' ? '/' : `/${mode}`);
+
   const [viewMode, setViewModeState] = useState<ViewMode>(() => {
+    const fromRoute = routeToView(window.location.pathname);
+    if (fromRoute !== 'dashboard') return fromRoute;
+
     const saved = sessionStorage.getItem('viewMode');
     return saved === 'dashboard' || saved === 'analytics' || saved === 'admin' || saved === 'reports'
       ? saved
@@ -70,7 +85,20 @@ export const useActivityReportUiState = () => {
   const setViewMode = (mode: ViewMode) => {
     setViewModeState(mode);
     sessionStorage.setItem('viewMode', mode);
+    const route = viewToRoute(mode);
+    if (window.location.pathname !== route) {
+      window.history.pushState({}, '', route);
+    }
   };
+
+  // Browser back/forward moves between workspace tabs.
+  useEffect(() => {
+    const onPop = () => {
+      setViewModeState(routeToView(window.location.pathname));
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   const openActivityEditor = () => setIsAddingActivity(true);
 

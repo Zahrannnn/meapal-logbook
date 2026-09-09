@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from '@/lib/toast';
 import type { ActivityEntry, User } from '../entities';
 import type { ActivityDraft } from '../features/activity/model/activity.types';
+import type { ViewMode } from './useActivityReportUiState';
 import { listDrafts } from '../features/activity/model/drafts.storage';
 import { subscribeDraftsChanged } from '../features/activity/model/drafts.storage';
 import { activityService, createActivityDraftFromEntry, useActivityForm } from '../features/activity';
@@ -26,7 +27,12 @@ export const useActivityReportAppState = ({
   handleLogout,
 }: UseActivityReportAppStateParams) => {
   const ui = useActivityReportUiState();
-  const data = useActivityReportData({ currentUser, viewMode: ui.viewMode, selectedDate: ui.selectedDate });
+  // Workspace routes are role-guarded: analytics/reports/administration are
+  // manager surfaces — anyone else falls back to their logbook.
+  const canManage = currentUser?.role === 'manager' || currentUser?.role === 'admin';
+  const viewMode: ViewMode = canManage || ui.viewMode === 'dashboard' ? ui.viewMode : 'dashboard';
+
+  const data = useActivityReportData({ currentUser, viewMode, selectedDate: ui.selectedDate });
 
   // Local-date string (NOT toISOString — that shifts to UTC and misdates entries
   // logged between midnight and the UTC offset).
@@ -276,6 +282,7 @@ export const useActivityReportAppState = ({
     ...data,
     ...ui,
     ...admin,
+    viewMode,
     activityDraft,
     editingActivity,
     isEditingRecurringActivity,

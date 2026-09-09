@@ -9,9 +9,12 @@ const theme: Theme = 'light';
 // only use 'centered' container for standalone components, never for full page apps or websites.
 const container: Container = 'none';
 
+// Workspace routes: the logbook root plus the manager tabs.
+const KNOWN_ROUTES = new Set(['/', '/analytics', '/reports', '/admin']);
+
 const isKnownPath = (pathname: string) => {
-  const normalized = pathname.replace(/\/+$/, '') || '/';
-  return normalized === '/';
+  const normalized = (pathname.replace(/\/+$/, '') || '/').toLowerCase();
+  return KNOWN_ROUTES.has(normalized);
 };
 
 function App() {
