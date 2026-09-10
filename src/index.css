@@ -182,6 +182,20 @@ body {
   --sidebar-primary-foreground: hsl(0 0% 100%);
 }
 
+/* Midnight: the true-black dark — OLED-friendly, deepest focus. Sits on top of
+   the shared .dark base; surfaces and borders only, the accent stays blue. */
+[data-theme='midnight'] {
+  --card: hsl(226 28% 7%);
+  --popover: hsl(226 28% 7%);
+  --sidebar: hsl(226 28% 7%);
+  --background: hsl(228 30% 3%);
+  --input: hsl(226 24% 12%);
+  --muted: hsl(226 24% 12%);
+  --accent: hsl(226 24% 12%);
+  --border: hsl(226 22% 16%);
+  --sidebar-border: hsl(226 22% 16%);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
