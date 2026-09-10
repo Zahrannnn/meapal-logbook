@@ -76,9 +76,8 @@ src/
 ├── content/         in-app "What's new" release notes
 ├── entities/        shared domain types
 ├── features/        feature modules: activity, dashboard, profile, recurring, auth, ...
-├── hooks/           small shared hooks
-├── lib/             API clients, pay-period and work-calendar math, telemetry, utils
-└── settings/        theme and container config
+├── hooks/           small shared hooks (app theme)
+└── lib/             API clients, pay-period and work-calendar math, telemetry, utils
 ```
 
 Release notes live in [CHANGELOG.md](CHANGELOG.md). The app also shows them once per release, after sign-in.
