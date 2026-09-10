@@ -200,6 +200,12 @@ body {
   }
 }
 
+/* Brand poster surface: fixed ink in both themes so its white-tinted copy stays readable. */
+.brand-ink {
+  background-color: hsl(222 47% 11%);
+  color: hsl(220 20% 97%);
+}
+
 /* Page Container */
 .page-container {
   @apply px-4 sm:px-6 lg:px-8 py-6 sm:py-8;

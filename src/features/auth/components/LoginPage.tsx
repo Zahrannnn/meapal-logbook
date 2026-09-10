@@ -56,8 +56,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onForgotPassword 
 
   return (
     <div className="min-h-screen bg-background flex flex-col lg:flex-row">
-      {/* Brand panel */}
-      <aside className="hidden lg:flex lg:w-[min(42vw,480px)] shrink-0 flex-col justify-between bg-foreground text-background border-r border-border/10 p-10 xl:p-12">
+      {/* Brand panel — fixed ink in both themes, so its white-tinted copy stays readable. */}
+      <aside className="hidden lg:flex lg:w-[min(42vw,480px)] shrink-0 flex-col justify-between brand-ink border-r border-border/10 p-10 xl:p-12">
         <AppLogo variant="inverse" large />
 
         <div className="space-y-8">
