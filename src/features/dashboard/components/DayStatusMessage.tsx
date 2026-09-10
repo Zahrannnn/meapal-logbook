@@ -30,9 +30,9 @@ export const DayStatusMessage: React.FC<{
   if (overtime) {
     return (
       <p className="flex items-center gap-1.5 text-sm font-bold text-foreground">
-        <span className="font-semibold text-emerald-600">Overtime</span>
+        <span className="font-semibold text-emerald-600 dark:text-emerald-400">Overtime</span>
         {loggedHours > stretchHours && (
-          <span className="font-semibold text-emerald-600 tabular-nums">
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
             {formatDelta(loggedHours - stretchHours)} past stretch
           </span>
         )}
@@ -45,7 +45,7 @@ export const DayStatusMessage: React.FC<{
         <PartyPopper className="size-4 text-orange-500" aria-hidden="true" />
         Main target reached
         {loggedHours > targetHours && (
-          <span className="font-semibold text-emerald-600 tabular-nums">
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
             {formatDelta(loggedHours - targetHours)} over
           </span>
         )}
