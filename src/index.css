@@ -196,6 +196,20 @@ body {
   --sidebar-border: hsl(226 22% 16%);
 }
 
+/* Graphite: the neutral dark — no blue tint, pure gray surfaces. */
+[data-theme='graphite'] {
+  --background: hsl(220 4% 8%);
+  --card: hsl(220 4% 12%);
+  --popover: hsl(220 4% 12%);
+  --sidebar: hsl(220 4% 12%);
+  --input: hsl(220 4% 17%);
+  --muted: hsl(220 4% 17%);
+  --accent: hsl(220 4% 17%);
+  --border: hsl(220 4% 21%);
+  --sidebar-border: hsl(220 4% 21%);
+  --muted-foreground: hsl(220 4% 64%);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
