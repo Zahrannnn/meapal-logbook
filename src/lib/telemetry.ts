@@ -17,7 +17,7 @@ export type TelemetryEventName =
   | 'modal_cancel'
   | 'modal_draft_saved'
   | 'nudge_click'
-  | 'dashboard_theme_change'
+  | 'theme_change'
   | 'nudge_dismiss'
   | 'duplicate_click'
   | 'draft_saved'
