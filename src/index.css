@@ -138,6 +138,8 @@ body {
   --destructive-foreground: hsl(210 40% 98%);
   --sidebar-accent-foreground: hsl(222.2 47.4% 11.2%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
+  --project-text-lightness: 34%;
+  --project-dot-lightness: 48%;
 }
 
 .dark {
@@ -172,6 +174,8 @@ body {
   --success: hsl(152 65% 48%);
   --warning: hsl(32 92% 52%);
   --info: hsl(213 94% 67%);
+  --project-text-lightness: 74%;
+  --project-dot-lightness: 62%;
   --secondary-foreground: hsl(210 40% 98%);
   --destructive-foreground: hsl(210 40% 98%);
   --sidebar-accent-foreground: hsl(0 0% 98%);

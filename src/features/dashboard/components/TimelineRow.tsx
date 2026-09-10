@@ -34,7 +34,8 @@ const projectColor = (id: string) => {
   let hash = 0;
   for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) % 997;
   const hue = projectHues[hash % projectHues.length];
-  return { text: `hsl(${hue} 55% 34%)`, dot: `hsl(${hue} 70% 48%)` };
+  // Lightness comes from tokens so per-project colors stay readable in the dark theme.
+  return { text: `hsl(${hue} 55% var(--project-text-lightness))`, dot: `hsl(${hue} 70% var(--project-dot-lightness))` };
 };
 
 /** One entry's content inside the day rail — the animated `motion.li` wrapper stays with the list. */
