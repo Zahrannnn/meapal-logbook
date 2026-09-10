@@ -5,11 +5,13 @@ FROM node:latest AS builder
 WORKDIR /app
 
 # install app dependencies
-#copies package.json and package-lock.json to Docker environment
-COPY package.json ./
+# copies the lockfile too, so the container installs exactly what CI verified
+COPY package.json package-lock.json ./
 
-# Installs all node packages
-RUN npm install 
+# npm ci is deterministic: it fails on package.json/lockfile drift instead of
+# silently re-resolving (a bare `npm install` once broke on a new react
+# release conflicting with an unused scaffold dependency)
+RUN npm ci
 
 # Copies everything over to Docker environment
 COPY . ./
