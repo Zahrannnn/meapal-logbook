@@ -7,7 +7,9 @@ import {
   LogOut,
   Menu,
   Megaphone,
+  Moon,
   Shield,
+  Sun,
   UserCircle,
   X,
 } from 'lucide-react';
@@ -20,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/hooks/useTheme';
 import { User as UserType, teams } from '../../entities';
 import { AppLogo } from './AppLogo';
 
@@ -73,6 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
   const userTeam = teams.find((team) => team.id === currentUser.team);
   const TeamIcon = userTeam?.icon;
   const roleLabel = roleLabelFor(currentUser.role);
+  const { theme, toggleTheme } = useTheme();
 
   const installButtonTitle = isInstalled ? 'App installed' : 'Install app';
 
@@ -133,6 +137,17 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={toggleTheme}
+                aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+                title={theme === 'dark' ? 'Light theme' : 'Dark theme'}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {theme === 'dark' ? <Sun /> : <Moon />}
+              </Button>
+
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -205,6 +220,16 @@ export const Header: React.FC<HeaderProps> = ({
           <AppLogo compact />
 
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              className="text-muted-foreground"
+            >
+              {theme === 'dark' ? <Sun /> : <Moon />}
+            </Button>
+
             <Button
               variant="ghost"
               size="icon-sm"
