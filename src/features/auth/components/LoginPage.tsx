@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { BarChart3, ClipboardList, Loader2, Users } from 'lucide-react';
+import { BarChart3, ClipboardList, Loader2, Moon, Sun, Users } from 'lucide-react';
 import { AppLogo } from '@/app/layout/AppLogo';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onForgotPassword 
   const [loginPassword, setLoginPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -95,7 +97,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onForgotPassword 
       </aside>
 
       {/* Sign-in panel */}
-      <main className="flex flex-1 items-center justify-center p-6 sm:p-10">
+      <main className="relative flex flex-1 items-center justify-center p-6 sm:p-10">
+        {/* Theme is reachable before sign-in too. */}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground sm:right-6 sm:top-6"
+        >
+          {theme === 'dark' ? <Sun /> : <Moon />}
+        </Button>
+
         <div className="w-full max-w-[380px]">
           {/* Mobile brand */}
           <div className="lg:hidden mb-8 pb-8 border-b border-border">
