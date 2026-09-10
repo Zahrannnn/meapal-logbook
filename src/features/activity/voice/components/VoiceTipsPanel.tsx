@@ -19,7 +19,7 @@ export const VoiceTipsPanel: React.FC<VoiceTipsPanelProps> = ({ isSending, onFal
       type="button"
       onClick={onFallbackToManual}
       disabled={isSending}
-      className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-white text-gray-700 rounded-xl font-semibold border border-gray-200 hover:bg-gray-50 transition-all duration-200 disabled:opacity-50"
+      className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-card text-gray-700 rounded-xl font-semibold border border-gray-200 hover:bg-gray-50 transition-all duration-200 disabled:opacity-50"
     >
       <FilePenLine className="w-4 h-4" />
       Switch to manual entry

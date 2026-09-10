@@ -87,7 +87,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       <AdminTabs activeTab={admin.activeTab} tabs={admin.tabs} onTabChange={admin.setActiveTab} />
       <AdminToolbar activeTab={admin.activeTab} searchQuery={admin.searchQuery} onSearchChange={admin.setSearchQuery} onAdd={handleAdd} onOpenBulkImport={() => admin.setIsBulkImportOpen(true)} />
 
-      <motion.div key={admin.activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+      <motion.div key={admin.activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-xl border border-gray-200 overflow-hidden shadow-sm">
         {admin.activeTab === 'users' && (
           <UsersTable
             users={admin.filteredUsers}

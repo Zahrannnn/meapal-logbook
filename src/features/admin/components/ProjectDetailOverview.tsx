@@ -39,19 +39,19 @@ export const ProgressSection: React.FC<{
 
     {/* Stats Grid */}
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <div className="bg-card rounded-lg p-4 border border-gray-200">
         <p className="text-xs text-gray-500 uppercase tracking-wide">Total Activities</p>
         <p className="text-2xl font-bold text-gray-900">{projectActivities.length}</p>
       </div>
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <div className="bg-card rounded-lg p-4 border border-gray-200">
         <p className="text-xs text-gray-500 uppercase tracking-wide">Completed</p>
         <p className="text-2xl font-bold text-green-600">{completedActivities.length}</p>
       </div>
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <div className="bg-card rounded-lg p-4 border border-gray-200">
         <p className="text-xs text-gray-500 uppercase tracking-wide">In Progress</p>
         <p className="text-2xl font-bold text-blue-600">{inProgressActivities.length}</p>
       </div>
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <div className="bg-card rounded-lg p-4 border border-gray-200">
         <p className="text-xs text-gray-500 uppercase tracking-wide">Total Hours</p>
         <p className="text-2xl font-bold text-purple-600">{totalHours.toFixed(1)}h</p>
       </div>

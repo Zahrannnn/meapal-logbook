@@ -93,7 +93,7 @@ export const VoiceActivityModal: React.FC<VoiceActivityModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             onClick={(event) => event.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col"
+            className="bg-card rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col"
           >
             <VoiceModalHeader isSending={isSending} onClose={onClose} />
 

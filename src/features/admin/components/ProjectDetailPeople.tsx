@@ -25,7 +25,7 @@ export const TeamsSection: React.FC<{
         return (
           <div
             key={idx}
-            className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm"
+            className="flex items-center gap-3 px-4 py-3 bg-card rounded-xl border border-gray-200 shadow-sm"
           >
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -55,7 +55,7 @@ export const MembersSection: React.FC<{
       {members.map((member) => (
         <div
           key={member.userId}
-          className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm"
+          className="flex items-center gap-3 px-4 py-3 bg-card rounded-xl border border-gray-200 shadow-sm"
         >
           <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 font-bold text-sm">
             {member.user.firstName[0]}{member.user.lastName[0]}
@@ -94,7 +94,7 @@ export const ContributorsSection: React.FC<{
         return (
           <div
             key={user.id}
-            className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200"
+            className="flex items-center gap-3 p-3 bg-card rounded-xl border border-gray-200"
           >
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm"
@@ -140,7 +140,7 @@ export const RecentActivitiesSection: React.FC<{
         return (
           <div
             key={activity.id}
-            className="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-200"
+            className="flex items-center gap-4 p-3 bg-card rounded-lg border border-gray-200"
           >
             <div className="flex-1 min-w-0">
               <p className="font-medium text-gray-900 truncate">{activity.title}</p>

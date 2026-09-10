@@ -25,7 +25,7 @@ export const ProjectTypeSection: React.FC<{
             className={`p-4 rounded-xl border-2 transition-all duration-200 text-center ${
               isSelected
                 ? `${colors.bg} ${colors.border} shadow-md`
-                : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                : 'border-gray-200 bg-card hover:border-gray-300 hover:bg-gray-50'
             }`}
           >
             <p className={`font-semibold text-sm capitalize ${isSelected ? colors.text : 'text-gray-700'}`}>
@@ -77,7 +77,7 @@ export const TeamSelectionSection: React.FC<{
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {backendTeams.map(team => {
         const isSelected = selectedTeamIds.includes(team.id);
-        return <button key={team.id} type="button" onClick={() => toggleTeam(team.id)} className={`p-4 rounded-lg border-2 transition-all text-left ${isSelected ? 'border-blue-600 bg-blue-50 shadow-md' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+        return <button key={team.id} type="button" onClick={() => toggleTeam(team.id)} className={`p-4 rounded-lg border-2 transition-all text-left ${isSelected ? 'border-blue-600 bg-blue-50 shadow-md' : 'border-gray-200 bg-card hover:border-gray-300'}`}>
           <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-2 bg-violet-100">
             <Users className="w-5 h-5 text-violet-600" />
           </div>

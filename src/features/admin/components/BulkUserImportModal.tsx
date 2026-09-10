@@ -106,7 +106,7 @@ export const BulkUserImportModal: React.FC<BulkUserImportModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+            className="bg-card rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
           >
             {/* Header */}
             <div className="p-6 bg-gradient-to-r from-purple-600 to-indigo-600 border-b border-purple-700">
@@ -150,7 +150,7 @@ export const BulkUserImportModal: React.FC<BulkUserImportModalProps> = ({
             <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
               <button
                 onClick={handleReset}
-                className="flex-1 px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 border border-gray-200"
+                className="flex-1 px-6 py-3 bg-card text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 border border-gray-200"
               >
                 Cancel
               </button>

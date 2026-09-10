@@ -81,7 +81,7 @@ export const TeamModal: React.FC<TeamModalProps> = ({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+            className="bg-card rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
           >
             {/* Header */}
             <div className="p-5 lg:p-6 bg-gradient-to-r from-emerald-500 to-teal-600">
@@ -152,7 +152,7 @@ export const TeamModal: React.FC<TeamModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="flex-1 px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 border border-gray-200 disabled:opacity-50"
+                className="flex-1 px-6 py-3 bg-card text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 border border-gray-200 disabled:opacity-50"
               >
                 Cancel
               </button>
