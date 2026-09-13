@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { ActivityEntry, User, Project } from '../../../entities';
 import { useDashboardActivityFeed } from '../hooks/useDashboardActivityFeed';
 import { useDashboardTelemetry } from '../hooks/useDashboardTelemetry';
@@ -13,9 +13,11 @@ import { DashboardPendingApprovals } from './DashboardPendingApprovals';
 import { DashboardMissedDayNudge } from './DashboardMissedDayNudge';
 import { DashboardPeriodProgress } from './DashboardPeriodProgress';
 import { DraftRecoveryBanner, PeriodLoadingOverlay } from './DashboardOverlays';
+import { CopyYesterdayDialog } from './CopyYesterdayDialog';
 import { QuickRelogBar } from './QuickRelogBar';
 import { calculateActualHours } from '../../../lib/utils';
-import { DAILY_STRETCH_HOURS, DAILY_TARGET_HOURS, getPeriodTargetHours } from '../../../lib/payPeriod';
+import { DAILY_STRETCH_HOURS, DAILY_TARGET_HOURS, getPeriodTargetHours, isWorkingDay } from '../../../lib/payPeriod';
+import { formatDateValue } from '@/components/date-picker';
 
 interface DashboardPageProps {
   currentUser: User;
@@ -32,6 +34,7 @@ interface DashboardPageProps {
   onAddActivity: () => void;
   onLogGap?: (start: string, end: string) => void;
   onQuickRelog?: (template: ActivityEntry) => void;
+  onCopyYesterday?: (source: ActivityEntry[]) => void;
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
   onDeleteActivity: (id: string) => void;
@@ -63,6 +66,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   onAddActivity,
   onLogGap,
   onQuickRelog,
+  onCopyYesterday,
   onEditActivity,
   onDuplicateActivity,
   onDeleteActivity,
@@ -108,6 +112,22 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
   // The user's own recent work as one-tap starting points for the selected day.
   const quickTemplates = useQuickTemplates({ activities, currentUser });
+
+  // Copy-yesterday source: the previous working day's own entries, when that
+  // day is inside the loaded period.
+  const [isCopyYesterdayOpen, setIsCopyYesterdayOpen] = useState(false);
+  const previousWorkdayEntries = useMemo(() => {
+    const cursor = new Date(selectedDate);
+    for (let back = 0; back < 7; back += 1) {
+      cursor.setDate(cursor.getDate() - 1);
+      if (!isWorkingDay(cursor)) continue;
+      const dateStr = formatDateValue(cursor);
+      return activities.filter(
+        (activity) => activity.date === dateStr && (!activity.employeeName || activity.employeeName === currentUser.name),
+      );
+    }
+    return [];
+  }, [activities, selectedDate, currentUser.name]);
 
   return (
     <div className="flex flex-col gap-6 lg:gap-8">
@@ -156,6 +176,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
               <DashboardActivityTimeline
                 activities={todayActivities}
+                copyYesterday={previousWorkdayEntries.length > 0 ? { count: previousWorkdayEntries.length, onOpen: () => setIsCopyYesterdayOpen(true) } : undefined}
                 projects={projects}
                 currentUser={currentUser}
                 selectedDate={selectedDate}
@@ -186,6 +207,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <DashboardPendingApprovals activities={pendingActivities} projects={projects} />
         </div>
       </div>
+
+      <CopyYesterdayDialog
+        open={isCopyYesterdayOpen}
+        onOpenChange={setIsCopyYesterdayOpen}
+        entries={previousWorkdayEntries}
+        projects={projects}
+        onConfirm={(entries) => onCopyYesterday?.(entries)}
+      />
     </div>
   );
 };

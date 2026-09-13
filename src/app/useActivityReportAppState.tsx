@@ -228,6 +228,53 @@ export const useActivityReportAppState = ({
     ui.openActivityEditor();
   };
 
+  // Copy yesterday: re-post the previous workday's own entries onto the
+  // selected day, times verbatim, one optimistic row per entry.
+  const handleCopyYesterday = async (source: ActivityEntry[]) => {
+    if (!currentUser || !backendUserId || source.length === 0) return;
+    logEvent('copy_yesterday', { count: source.length, to_date: selectedDateStr });
+    await data.ensureActivityDependencies();
+
+    let copied = 0;
+    const failures: string[] = [];
+    for (const entry of source) {
+      const draft = createActivityDraftFromEntry(entry);
+      const tempId = optimisticSubmit(draft, selectedDateStr, null);
+      try {
+        const created = await activityService.submit(draft, {
+          selectedDate: selectedDateStr,
+          backendUserId,
+          backendCompetencies: data.backendCompetencies,
+          editingActivity: null,
+          isEditingRecurringActivity: false,
+        });
+        if (!created) {
+          if (tempId) optimisticRollback(tempId);
+          failures.push(entry.title);
+          continue;
+        }
+        const [mapped] = data.mapActivities([created]);
+        if (tempId && mapped) {
+          data.setActivities((current) => current.map((a) => (a.id === tempId ? mapped : a)));
+        }
+        copied += 1;
+      } catch (err: any) {
+        console.error('Failed to copy entry:', err);
+        if (tempId) optimisticRollback(tempId);
+        failures.push(entry.title);
+      }
+    }
+
+    setOptimisticId(null);
+    void data.refreshStreak();
+    if (copied > 0) {
+      toast.success(`Copied ${copied} ${copied === 1 ? 'entry' : 'entries'} to this day`);
+    }
+    if (failures.length > 0) {
+      toast.error(`Failed to copy: ${failures.join(', ')}`);
+    }
+  };
+
   const handleOpenActivity = async () => {
     await data.ensureActivityDependencies();
     // A leftover create-draft (crash, refresh, accidental close) is already back
@@ -333,6 +380,7 @@ export const useActivityReportAppState = ({
     handleDuplicateActivity,
     handleLogGap,
     handleQuickRelog,
+    handleCopyYesterday,
     handleDeleteActivity,
     handleEditRecurringActivity,
     handleDeleteRecurringActivity,

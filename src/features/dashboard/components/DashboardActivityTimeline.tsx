@@ -25,6 +25,7 @@ interface DashboardActivityTimelineProps {
   onFilterChange: (project: string) => void;
   onAddActivity: () => void;
   onLogGap?: (start: string, end: string) => void;
+  copyYesterday?: { count: number; onOpen: () => void };
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
   onDeleteActivity: (id: string) => void;
@@ -68,6 +69,7 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
   onFilterChange,
   onAddActivity,
   onLogGap,
+  copyYesterday,
   onEditActivity,
   onDuplicateActivity,
   onDeleteActivity,
@@ -150,6 +152,7 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
             viewingToday={viewingToday}
             dayInPast={dayInPast}
             onAddActivity={onAddActivity}
+            copyYesterday={copyYesterday}
           />
         )
       ) : (

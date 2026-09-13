@@ -39,7 +39,8 @@ export const DayEmptyState: React.FC<{
   viewingToday: boolean;
   dayInPast: boolean;
   onAddActivity: () => void;
-}> = ({ selectedDate, restDay, viewingToday, dayInPast, onAddActivity }) => (
+  copyYesterday?: { count: number; onOpen: () => void };
+}> = ({ selectedDate, restDay, viewingToday, dayInPast, onAddActivity, copyYesterday }) => (
   <Empty className="py-14">
     <EmptyHeader>
       <EmptyMedia variant="icon">
@@ -70,10 +71,17 @@ export const DayEmptyState: React.FC<{
       )}
     </EmptyHeader>
     <EmptyContent>
-      <Button size="sm" variant={restDay ? 'outline' : 'default'} onClick={onAddActivity}>
-        <PlusIcon data-icon="inline-start" />
-        {restDay ? 'Log time anyway' : viewingToday ? 'Log your first activity' : 'Log an activity'}
-      </Button>
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <Button size="sm" variant={restDay ? 'outline' : 'default'} onClick={onAddActivity}>
+          <PlusIcon data-icon="inline-start" />
+          {restDay ? 'Log time anyway' : viewingToday ? 'Log your first activity' : 'Log an activity'}
+        </Button>
+        {copyYesterday && (
+          <Button size="sm" variant="outline" onClick={copyYesterday.onOpen}>
+            Copy yesterday ({copyYesterday.count})
+          </Button>
+        )}
+      </div>
     </EmptyContent>
   </Empty>
 );

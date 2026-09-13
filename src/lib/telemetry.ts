@@ -22,6 +22,7 @@ export type TelemetryEventName =
   | 'duplicate_click'
   | 'gap_click'
   | 'quick_relog_click'
+  | 'copy_yesterday'
   | 'draft_saved'
   | 'draft_resumed'
   | 'draft_restored'

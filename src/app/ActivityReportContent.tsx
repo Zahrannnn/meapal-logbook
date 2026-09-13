@@ -30,6 +30,7 @@ interface ActivityReportContentProps {
   onAddActivity: () => void;
   onLogGap?: (start: string, end: string) => void;
   onQuickRelog?: (template: ActivityEntry) => void;
+  onCopyYesterday?: (source: ActivityEntry[]) => void;
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
   onDeleteActivity: (id: string) => void;
@@ -88,6 +89,7 @@ export const ActivityReportContent: React.FC<ActivityReportContentProps> = ({
   onAddActivity,
   onLogGap,
   onQuickRelog,
+  onCopyYesterday,
   onEditActivity,
   onDuplicateActivity,
   onDeleteActivity,
@@ -132,6 +134,7 @@ export const ActivityReportContent: React.FC<ActivityReportContentProps> = ({
         onAddActivity={onAddActivity}
         onLogGap={onLogGap}
         onQuickRelog={onQuickRelog}
+        onCopyYesterday={onCopyYesterday}
         onEditActivity={onEditActivity}
         onDuplicateActivity={onDuplicateActivity}
         onDeleteActivity={onDeleteActivity}
