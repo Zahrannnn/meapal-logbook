@@ -198,6 +198,15 @@ export const useActivityReportAppState = ({
     ui.openActivityEditor();
   };
 
+  // Gap click: open the form with exactly the day's free window prefilled.
+  const handleLogGap = async (startTime: string, endTime: string) => {
+    logEvent('gap_click', { start: startTime, end: endTime });
+    await data.ensureActivityDependencies();
+    resetActivityForm();
+    mergeActivityPatch({ startTime, endTime });
+    ui.openActivityEditor();
+  };
+
   const handleOpenActivity = async () => {
     await data.ensureActivityDependencies();
     // A leftover create-draft (crash, refresh, accidental close) is already back
@@ -301,6 +310,7 @@ export const useActivityReportAppState = ({
     handleAppLogout,
     handleEditActivity,
     handleDuplicateActivity,
+    handleLogGap,
     handleDeleteActivity,
     handleEditRecurringActivity,
     handleDeleteRecurringActivity,

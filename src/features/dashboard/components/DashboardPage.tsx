@@ -28,6 +28,7 @@ interface DashboardPageProps {
   prevTaskBest?: number;
   isStreakLoading?: boolean;
   onAddActivity: () => void;
+  onLogGap?: (start: string, end: string) => void;
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
   onDeleteActivity: (id: string) => void;
@@ -57,6 +58,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   prevTaskBest = 0,
   isStreakLoading = false,
   onAddActivity,
+  onLogGap,
   onEditActivity,
   onDuplicateActivity,
   onDeleteActivity,
@@ -154,6 +156,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 filterProject={filterProject}
                 onFilterChange={onFilterChange}
                 onAddActivity={onAddActivity}
+                onLogGap={onLogGap}
                 onEditActivity={onEditActivity}
                 onDuplicateActivity={onDuplicateActivity}
                 onDeleteActivity={onDeleteActivity}

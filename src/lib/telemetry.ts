@@ -20,6 +20,7 @@ export type TelemetryEventName =
   | 'theme_change'
   | 'nudge_dismiss'
   | 'duplicate_click'
+  | 'gap_click'
   | 'draft_saved'
   | 'draft_resumed'
   | 'draft_restored'
