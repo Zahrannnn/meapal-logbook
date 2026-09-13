@@ -21,6 +21,7 @@ export type TelemetryEventName =
   | 'nudge_dismiss'
   | 'duplicate_click'
   | 'gap_click'
+  | 'quick_relog_click'
   | 'draft_saved'
   | 'draft_resumed'
   | 'draft_restored'

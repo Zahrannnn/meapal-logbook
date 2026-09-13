@@ -29,6 +29,7 @@ interface ActivityReportContentProps {
   onDateChange: (date: Date) => void;
   onAddActivity: () => void;
   onLogGap?: (start: string, end: string) => void;
+  onQuickRelog?: (template: ActivityEntry) => void;
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
   onDeleteActivity: (id: string) => void;
@@ -86,6 +87,7 @@ export const ActivityReportContent: React.FC<ActivityReportContentProps> = ({
   onDateChange,
   onAddActivity,
   onLogGap,
+  onQuickRelog,
   onEditActivity,
   onDuplicateActivity,
   onDeleteActivity,
@@ -129,6 +131,7 @@ export const ActivityReportContent: React.FC<ActivityReportContentProps> = ({
         isStreakLoading={isStreakLoading}
         onAddActivity={onAddActivity}
         onLogGap={onLogGap}
+        onQuickRelog={onQuickRelog}
         onEditActivity={onEditActivity}
         onDuplicateActivity={onDuplicateActivity}
         onDeleteActivity={onDeleteActivity}

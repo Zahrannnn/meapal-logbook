@@ -61,3 +61,22 @@ export const dayGaps = (
   }
   return gaps;
 };
+
+/**
+ * First window on the day that fits `durationMinutes` — inside the earliest
+ * gap that can hold it, bounded to the workday. Returns null when the workday
+ * is full (the caller falls back to duplicating with the original times).
+ */
+export const nextFreeSlot = (
+  activities: Array<{ startTime: string; endTime: string }>,
+  durationMinutes: number,
+  dayStart = '09:00',
+  dayEnd = '18:00',
+): DayGap | null => {
+  if (durationMinutes <= 0) return null;
+  const gap = dayGaps(activities, durationMinutes, dayStart, dayEnd).find(
+    (candidate) => candidate.minutes >= durationMinutes,
+  );
+  if (gap) return { start: gap.start, end: toHHMM(toMinutes(gap.start) + durationMinutes), minutes: durationMinutes };
+  return null;
+};

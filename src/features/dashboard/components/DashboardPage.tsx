@@ -4,6 +4,7 @@ import { useDashboardActivityFeed } from '../hooks/useDashboardActivityFeed';
 import { useDashboardTelemetry } from '../hooks/useDashboardTelemetry';
 import { useMissedDayNudge } from '../hooks/useMissedDayNudge';
 import { usePayPeriodProgress } from '../hooks/usePayPeriodProgress';
+import { useQuickTemplates } from '../hooks/useQuickTemplates';
 import { DashboardTodayHero } from './DashboardTodayHero';
 import { DashboardTrendChart } from './DashboardTrendChart';
 import { DashboardDayControls } from './DashboardDayControls';
@@ -12,6 +13,7 @@ import { DashboardPendingApprovals } from './DashboardPendingApprovals';
 import { DashboardMissedDayNudge } from './DashboardMissedDayNudge';
 import { DashboardPeriodProgress } from './DashboardPeriodProgress';
 import { DraftRecoveryBanner, PeriodLoadingOverlay } from './DashboardOverlays';
+import { QuickRelogBar } from './QuickRelogBar';
 import { calculateActualHours } from '../../../lib/utils';
 import { DAILY_STRETCH_HOURS, DAILY_TARGET_HOURS, getPeriodTargetHours } from '../../../lib/payPeriod';
 
@@ -29,6 +31,7 @@ interface DashboardPageProps {
   isStreakLoading?: boolean;
   onAddActivity: () => void;
   onLogGap?: (start: string, end: string) => void;
+  onQuickRelog?: (template: ActivityEntry) => void;
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
   onDeleteActivity: (id: string) => void;
@@ -59,6 +62,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   isStreakLoading = false,
   onAddActivity,
   onLogGap,
+  onQuickRelog,
   onEditActivity,
   onDuplicateActivity,
   onDeleteActivity,
@@ -102,6 +106,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const { payPeriod, periodCovered, ownActivities, periodWorkdays, elapsedWorkdays } =
     usePayPeriodProgress({ currentUser, activities, selectedDate, loadedPeriodKey });
 
+  // The user's own recent work as one-tap starting points for the selected day.
+  const quickTemplates = useQuickTemplates({ activities, currentUser });
+
   return (
     <div className="flex flex-col gap-6 lg:gap-8">
       {showNudge && missedWorkday && (
@@ -144,6 +151,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   elapsedWorkdays={elapsedWorkdays.length}
                 />
               </div>
+
+              <QuickRelogBar templates={quickTemplates} onPick={(template) => onQuickRelog?.(template)} />
 
               <DashboardActivityTimeline
                 activities={todayActivities}

@@ -69,6 +69,7 @@ export const ActivityReportApp = () => {
         onDateChange={app.setSelectedDate}
         onAddActivity={() => void app.handleOpenActivity()}
         onLogGap={(start, end) => void app.handleLogGap(start, end)}
+        onQuickRelog={(template) => void app.handleQuickRelog(template)}
         onEditActivity={app.handleEditActivity}
         onDuplicateActivity={app.handleDuplicateActivity}
         onDeleteActivity={app.handleDeleteActivity}
