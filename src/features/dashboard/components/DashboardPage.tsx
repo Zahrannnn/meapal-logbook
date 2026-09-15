@@ -18,6 +18,7 @@ import { QuickRelogBar } from './QuickRelogBar';
 import { calculateActualHours } from '../../../lib/utils';
 import { DAILY_STRETCH_HOURS, DAILY_TARGET_HOURS, getPeriodTargetHours, isWorkingDay } from '../../../lib/payPeriod';
 import { formatDateValue } from '@/components/date-picker';
+import type { DayGap } from '@/lib/time';
 
 interface DashboardPageProps {
   currentUser: User;
@@ -33,7 +34,7 @@ interface DashboardPageProps {
   isStreakLoading?: boolean;
   onAddActivity: () => void;
   onLogGap?: (start: string, end: string) => void;
-  onQuickRelog?: (template: ActivityEntry) => void;
+  onQuickRelog?: (template: ActivityEntry, freeSlots: DayGap[]) => void;
   onCopyYesterday?: (source: ActivityEntry[]) => void;
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
@@ -88,6 +89,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     totalHoursToday,
     weeklyTrendData,
     pendingActivities,
+    freeSlots,
   } = useDashboardActivityFeed({
     activities,
     currentUser,
@@ -172,7 +174,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 />
               </div>
 
-              <QuickRelogBar templates={quickTemplates} onPick={(template) => onQuickRelog?.(template)} />
+              <QuickRelogBar templates={quickTemplates} onPick={(template) => onQuickRelog?.(template, freeSlots)} />
 
               <DashboardActivityTimeline
                 activities={todayActivities}
@@ -187,6 +189,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 onFilterChange={onFilterChange}
                 onAddActivity={onAddActivity}
                 onLogGap={onLogGap}
+                freeSlots={freeSlots}
                 onEditActivity={onEditActivity}
                 onDuplicateActivity={onDuplicateActivity}
                 onDeleteActivity={onDeleteActivity}

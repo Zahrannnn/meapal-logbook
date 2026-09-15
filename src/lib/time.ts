@@ -63,20 +63,18 @@ export const dayGaps = (
 };
 
 /**
- * First window on the day that fits `durationMinutes` — inside the earliest
- * gap that can hold it, bounded to the workday. Returns null when the workday
- * is full (the caller falls back to duplicating with the original times).
+ * Where a `durationMinutes` entry lands among the day's precomputed free
+ * slots: the first slot that fits it fully, otherwise the largest slot with
+ * the entry clamped to it (`clamped: true` — the caller says so in a toast).
+ * Null only when the day has no free slots at all.
  */
-export const nextFreeSlot = (
-  activities: Array<{ startTime: string; endTime: string }>,
+export const fitSlot = (
+  gaps: DayGap[],
   durationMinutes: number,
-  dayStart = '09:00',
-  dayEnd = '18:00',
-): DayGap | null => {
-  if (durationMinutes <= 0) return null;
-  const gap = dayGaps(activities, durationMinutes, dayStart, dayEnd).find(
-    (candidate) => candidate.minutes >= durationMinutes,
-  );
-  if (gap) return { start: gap.start, end: toHHMM(toMinutes(gap.start) + durationMinutes), minutes: durationMinutes };
-  return null;
+): { start: string; end: string; clamped: boolean } | null => {
+  if (durationMinutes <= 0 || gaps.length === 0) return null;
+  const fit = gaps.find((gap) => gap.minutes >= durationMinutes);
+  if (fit) return { start: fit.start, end: toHHMM(toMinutes(fit.start) + durationMinutes), clamped: false };
+  const largest = gaps.reduce((left, right) => (right.minutes > left.minutes ? right : left));
+  return { start: largest.start, end: largest.end, clamped: true };
 };

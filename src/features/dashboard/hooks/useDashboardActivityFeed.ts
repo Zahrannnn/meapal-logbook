@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { ActivityEntry, User } from '../../../entities';
 import { calculateActualHours } from '../../../lib/utils';
+import { dayGaps, type DayGap } from '../../../lib/time';
 import { getWorkWeek } from '../../../lib/payPeriod';
 
 interface UseDashboardActivityFeedOptions {
@@ -90,6 +91,10 @@ export const useDashboardActivityFeed = ({
     [selectedDateActivities],
   );
 
+  // The day's free windows — computed once here, shared by the timeline's gap
+  // chips and the quick re-log placement.
+  const freeSlots = useMemo<DayGap[]>(() => dayGaps(selectedDateActivities), [selectedDateActivities]);
+
   return {
     todayActivities,
     dayActivityCount: selectedDateActivities.length,
@@ -98,5 +103,6 @@ export const useDashboardActivityFeed = ({
     weekActivityCount,
     weekHours,
     pendingActivities,
+    freeSlots,
   };
 };

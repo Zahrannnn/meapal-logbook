@@ -13,7 +13,7 @@ import { useActivityReportData } from './useActivityReportData';
 import { useActivityReportUiState } from './useActivityReportUiState';
 import { logEvent } from '../lib/telemetry';
 import { formatDateValue } from '@/components/date-picker';
-import { nextFreeSlot, toMinutes } from '../lib/time';
+import { fitSlot, formatDurationLabel, toMinutes, type DayGap } from '../lib/time';
 
 interface UseActivityReportAppStateParams {
   currentUser: User | null;
@@ -207,14 +207,14 @@ export const useActivityReportAppState = ({
     ui.openActivityEditor();
   };
 
-  // Quick re-log: duplicate one of the user's recent entries into the selected
-  // day's next free slot. A full day opens the form with the original times.
-  const handleQuickRelog = async (activity: ActivityEntry) => {
+  // Quick re-log: duplicate one of the user's recent entries into the shared
+  // free-slot computation. Full fit places exactly; otherwise it clamps into
+  // the largest slot and says so; a genuinely full day keeps the original times.
+  const handleQuickRelog = async (activity: ActivityEntry, freeSlots: DayGap[]) => {
     logEvent('quick_relog_click', { source_date: activity.date, project_id: activity.projectId });
     await data.ensureActivityDependencies();
-    const dayActivities = data.activities.filter((entry) => entry.date === selectedDateStr);
     const durationMinutes = Math.max(0, toMinutes(activity.endTime) - toMinutes(activity.startTime));
-    const slot = nextFreeSlot(dayActivities, durationMinutes);
+    const slot = fitSlot(freeSlots, durationMinutes);
     resetActivityForm();
     const draft = createActivityDraftFromEntry(activity);
     setActivityDraft({
@@ -222,8 +222,13 @@ export const useActivityReportAppState = ({
       startTime: slot?.start ?? draft.startTime,
       endTime: slot?.end ?? draft.endTime,
     });
-    if (!slot) {
-      toast('This day has no free slot left — adjust the times in the form.', { icon: 'ℹ️' });
+    if (slot?.clamped) {
+      toast(
+        `Free slot was shorter than ${formatDurationLabel(durationMinutes)} — placed ${slot.start}–${slot.end}. Adjust if needed.`,
+        { icon: 'ℹ️' },
+      );
+    } else if (!slot) {
+      toast('This day has no free slots left — adjust the times in the form.', { icon: 'ℹ️' });
     }
     ui.openActivityEditor();
   };

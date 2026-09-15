@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ActivityEntry, Project, User } from '../entities';
+import type { DayGap } from '../lib/time';
 import type { BackendCompetency, BackendProject, BackendTeam, BackendUser } from '../lib/api';
 import { AnalyticsPage } from '../features/analytics';
 import { AdminPage } from '../features/admin';
@@ -29,7 +30,7 @@ interface ActivityReportContentProps {
   onDateChange: (date: Date) => void;
   onAddActivity: () => void;
   onLogGap?: (start: string, end: string) => void;
-  onQuickRelog?: (template: ActivityEntry) => void;
+  onQuickRelog?: (template: ActivityEntry, freeSlots: DayGap[]) => void;
   onCopyYesterday?: (source: ActivityEntry[]) => void;
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;

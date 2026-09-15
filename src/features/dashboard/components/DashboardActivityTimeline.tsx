@@ -9,7 +9,7 @@ import { DayEmptyState, FilteredEmptyState } from './TimelineEmptyStates';
 import { TimelineHeader } from './TimelineHeader';
 import { TimelineRow } from './TimelineRow';
 import { cn } from '@/lib/utils';
-import { dayGaps, formatDurationLabel, toMinutes, type DayGap } from '@/lib/time';
+import { formatDurationLabel, toMinutes, type DayGap } from '@/lib/time';
 import { isWorkingDay } from '../../../lib/payPeriod';
 import type { ActivityEntry, Project, User } from '../../../entities';
 
@@ -25,6 +25,8 @@ interface DashboardActivityTimelineProps {
   onFilterChange: (project: string) => void;
   onAddActivity: () => void;
   onLogGap?: (start: string, end: string) => void;
+  /** The day's free windows, computed once in the activity feed. */
+  freeSlots?: DayGap[];
   copyYesterday?: { count: number; onOpen: () => void };
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
@@ -69,6 +71,7 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
   onFilterChange,
   onAddActivity,
   onLogGap,
+  freeSlots,
   copyYesterday,
   onEditActivity,
   onDuplicateActivity,
@@ -91,7 +94,7 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
 
   // Gap chips only reflect the real day — hidden while search/project filters
   // shrink the list, since a filtered list's holes aren't free time.
-  const gaps = onLogGap && !isFiltering && !isLoading ? dayGaps(dayActivities) : [];
+  const gaps = onLogGap && !isFiltering && !isLoading ? freeSlots ?? [] : [];
 
   type Row = { kind: 'entry'; activity: ActivityEntry; index: number } | { kind: 'gap'; gap: DayGap; key: string };
   const rows: Row[] = (() => {
