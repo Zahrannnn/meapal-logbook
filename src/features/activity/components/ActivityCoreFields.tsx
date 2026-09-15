@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FolderKanbanIcon } from 'lucide-react';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -84,6 +84,17 @@ export const ActivityCoreFields = ({ activity, projects, projectError, onChange 
     onChange({ endTime: toHHMM(Math.min(toMinutes(activity.startTime) + minutes, MAX_MINUTES)) });
   };
 
+  // Gap chips can prefill off-grid times (any entry end); keep them selectable.
+  const startTimeOptions = useMemo(() => {
+    if (START_TIME_OPTIONS.some((option) => option.value === activity.startTime)) return START_TIME_OPTIONS;
+    const point = new Date(2000, 0, 1);
+    const [hours, minutes] = activity.startTime.split(':').map(Number);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return START_TIME_OPTIONS;
+    point.setHours(hours, minutes);
+    return [...START_TIME_OPTIONS, { value: activity.startTime, label: point.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) }]
+      .sort((left, right) => toMinutes(left.value) - toMinutes(right.value));
+  }, [activity.startTime]);
+
   const durationSelectValue = DURATION_OPTIONS.includes(durationMinutes)
     ? String(durationMinutes)
     : durationMinutes > 0
@@ -150,7 +161,7 @@ export const ActivityCoreFields = ({ activity, projects, projectError, onChange 
                 <SelectValue placeholder="Start" />
               </SelectTrigger>
               <SelectContent>
-                {START_TIME_OPTIONS.map((option) => (
+                {startTimeOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
