@@ -13,7 +13,7 @@ import { useActivityReportData } from './useActivityReportData';
 import { useActivityReportUiState } from './useActivityReportUiState';
 import { logEvent } from '../lib/telemetry';
 import { formatDateValue } from '@/components/date-picker';
-import { toMinutes } from '../lib/time';
+import { fitSlot, formatDurationLabel, toMinutes, type DayGap } from '../lib/time';
 
 interface UseActivityReportAppStateParams {
   currentUser: User | null;
@@ -198,6 +198,88 @@ export const useActivityReportAppState = ({
     ui.openActivityEditor();
   };
 
+  // Gap click: open the form with exactly the day's free window prefilled.
+  const handleLogGap = async (startTime: string, endTime: string) => {
+    logEvent('gap_click', { start: startTime, end: endTime });
+    await data.ensureActivityDependencies();
+    resetActivityForm();
+    mergeActivityPatch({ startTime, endTime });
+    ui.openActivityEditor();
+  };
+
+  // Quick re-log: duplicate one of the user's recent entries into the shared
+  // free-slot computation. Full fit places exactly; otherwise it clamps into
+  // the largest slot and says so; a genuinely full day keeps the original times.
+  const handleQuickRelog = async (activity: ActivityEntry, freeSlots: DayGap[]) => {
+    logEvent('quick_relog_click', { source_date: activity.date, project_id: activity.projectId });
+    await data.ensureActivityDependencies();
+    const durationMinutes = Math.max(0, toMinutes(activity.endTime) - toMinutes(activity.startTime));
+    const slot = fitSlot(freeSlots, durationMinutes);
+    resetActivityForm();
+    const draft = createActivityDraftFromEntry(activity);
+    setActivityDraft({
+      ...draft,
+      startTime: slot?.start ?? draft.startTime,
+      endTime: slot?.end ?? draft.endTime,
+    });
+    if (slot?.clamped) {
+      toast(
+        `Free slot was shorter than ${formatDurationLabel(durationMinutes)} — placed ${slot.start}–${slot.end}. Adjust if needed.`,
+        { icon: 'ℹ️' },
+      );
+    } else if (!slot) {
+      toast('This day has no free slots left — adjust the times in the form.', { icon: 'ℹ️' });
+    }
+    ui.openActivityEditor();
+  };
+
+  // Copy yesterday: re-post the previous workday's own entries onto the
+  // selected day, times verbatim, one optimistic row per entry.
+  const handleCopyYesterday = async (source: ActivityEntry[]) => {
+    if (!currentUser || !backendUserId || source.length === 0) return;
+    logEvent('copy_yesterday', { count: source.length, to_date: selectedDateStr });
+    await data.ensureActivityDependencies();
+
+    let copied = 0;
+    const failures: string[] = [];
+    for (const entry of source) {
+      const draft = createActivityDraftFromEntry(entry);
+      const tempId = optimisticSubmit(draft, selectedDateStr, null);
+      try {
+        const created = await activityService.submit(draft, {
+          selectedDate: selectedDateStr,
+          backendUserId,
+          backendCompetencies: data.backendCompetencies,
+          editingActivity: null,
+          isEditingRecurringActivity: false,
+        });
+        if (!created) {
+          if (tempId) optimisticRollback(tempId);
+          failures.push(entry.title);
+          continue;
+        }
+        const [mapped] = data.mapActivities([created]);
+        if (tempId && mapped) {
+          data.setActivities((current) => current.map((a) => (a.id === tempId ? mapped : a)));
+        }
+        copied += 1;
+      } catch (err: any) {
+        console.error('Failed to copy entry:', err);
+        if (tempId) optimisticRollback(tempId);
+        failures.push(entry.title);
+      }
+    }
+
+    setOptimisticId(null);
+    void data.refreshStreak();
+    if (copied > 0) {
+      toast.success(`Copied ${copied} ${copied === 1 ? 'entry' : 'entries'} to this day`);
+    }
+    if (failures.length > 0) {
+      toast.error(`Failed to copy: ${failures.join(', ')}`);
+    }
+  };
+
   const handleOpenActivity = async () => {
     await data.ensureActivityDependencies();
     // A leftover create-draft (crash, refresh, accidental close) is already back
@@ -301,6 +383,9 @@ export const useActivityReportAppState = ({
     handleAppLogout,
     handleEditActivity,
     handleDuplicateActivity,
+    handleLogGap,
+    handleQuickRelog,
+    handleCopyYesterday,
     handleDeleteActivity,
     handleEditRecurringActivity,
     handleDeleteRecurringActivity,

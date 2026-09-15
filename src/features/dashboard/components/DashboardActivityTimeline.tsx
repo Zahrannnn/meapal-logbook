@@ -1,6 +1,7 @@
 import React from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { format } from 'date-fns';
+import { PlusIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DashboardFilters } from './DashboardFilters';
@@ -8,6 +9,7 @@ import { DayEmptyState, FilteredEmptyState } from './TimelineEmptyStates';
 import { TimelineHeader } from './TimelineHeader';
 import { TimelineRow } from './TimelineRow';
 import { cn } from '@/lib/utils';
+import { formatDurationLabel, toMinutes, type DayGap } from '@/lib/time';
 import { isWorkingDay } from '../../../lib/payPeriod';
 import type { ActivityEntry, Project, User } from '../../../entities';
 
@@ -22,6 +24,10 @@ interface DashboardActivityTimelineProps {
   filterProject: string;
   onFilterChange: (project: string) => void;
   onAddActivity: () => void;
+  onLogGap?: (start: string, end: string) => void;
+  /** The day's free windows, computed once in the activity feed. */
+  freeSlots?: DayGap[];
+  copyYesterday?: { count: number; onOpen: () => void };
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
   onDeleteActivity: (id: string) => void;
@@ -64,6 +70,9 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
   filterProject,
   onFilterChange,
   onAddActivity,
+  onLogGap,
+  freeSlots,
+  copyYesterday,
   onEditActivity,
   onDuplicateActivity,
   onDeleteActivity,
@@ -82,6 +91,27 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
   const totalMinutes = Math.round(dayActivities.reduce((sum, activity) => sum + activity.duration, 0) * 60);
   const showFilters = dayActivities.length > 0 || isFiltering;
   const isLoading = isActivitiesRefreshing && dayActivities.length === 0;
+
+  // Gap chips only reflect the real day — hidden while search/project filters
+  // shrink the list, since a filtered list's holes aren't free time.
+  const gaps = onLogGap && !isFiltering && !isLoading ? freeSlots ?? [] : [];
+
+  type Row = { kind: 'entry'; activity: ActivityEntry; index: number } | { kind: 'gap'; gap: DayGap; key: string };
+  const rows: Row[] = (() => {
+    if (gaps.length === 0) return dayActivities.map((activity, index) => ({ kind: 'entry' as const, activity, index }));
+    const queue = [...gaps];
+    const items: Row[] = [];
+    dayActivities.forEach((activity, index) => {
+      const startMin = toMinutes(activity.startTime);
+      while (queue.length > 0 && toMinutes(queue[0].end) <= startMin) {
+        const gap = queue.shift()!;
+        items.push({ kind: 'gap', gap, key: `gap-${gap.start}` });
+      }
+      items.push({ kind: 'entry', activity, index });
+    });
+    queue.forEach((gap) => items.push({ kind: 'gap', gap, key: `gap-${gap.start}` }));
+    return items;
+  })();
 
   return (
     <Card className="rounded-2xl gap-0 py-0 overflow-hidden" data-tour="list">
@@ -125,6 +155,7 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
             viewingToday={viewingToday}
             dayInPast={dayInPast}
             onAddActivity={onAddActivity}
+            copyYesterday={copyYesterday}
           />
         )
       ) : (
@@ -135,30 +166,45 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
             aria-hidden="true"
           />
           <AnimatePresence initial={false}>
-          {dayActivities.map((activity, index) => (
-            <motion.li
-              key={activity.id}
-              layout={!reduceMotion}
-              initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reduceMotion ? undefined : { opacity: 0, scale: 0.97, transition: { duration: 0.15 } }}
-              transition={{ duration: 0.25, ease: 'easeOut', delay: Math.min(index * 0.04, 0.2) }}
-              className={cn(
-                'relative flex flex-col py-4 sm:flex-row sm:items-start',
-                optimisticId === activity.id && 'animate-pulse',
-              )}
-              aria-busy={optimisticId === activity.id || undefined}
-            >
-              <TimelineRow
-                activity={activity}
-                project={projects.find((item) => item.id === activity.projectId)}
-                currentUser={currentUser}
-                onEdit={onEditActivity}
-                onDuplicate={onDuplicateActivity}
-                onDelete={onDeleteActivity}
-              />
-            </motion.li>
-          ))}
+          {rows.map((row) =>
+            row.kind === 'gap' ? (
+              <li key={row.key} className="relative flex justify-start py-1 sm:pl-20">
+                <button
+                  type="button"
+                  onClick={() => onLogGap?.(row.gap.start, row.gap.end)}
+                  className="group inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-foreground"
+                  aria-label={`Log an activity from ${row.gap.start} to ${row.gap.end}`}
+                >
+                  <PlusIcon className="size-3 transition-transform group-hover:scale-110" aria-hidden="true" />
+                  Log {row.gap.start} – {row.gap.end}
+                  <span className="font-medium opacity-60">· {formatDurationLabel(row.gap.minutes)} free</span>
+                </button>
+              </li>
+            ) : (
+              <motion.li
+                key={row.activity.id}
+                layout={!reduceMotion}
+                initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? undefined : { opacity: 0, scale: 0.97, transition: { duration: 0.15 } }}
+                transition={{ duration: 0.25, ease: 'easeOut', delay: Math.min(row.index * 0.04, 0.2) }}
+                className={cn(
+                  'relative flex flex-col py-4 sm:flex-row sm:items-start',
+                  optimisticId === row.activity.id && 'animate-pulse',
+                )}
+                aria-busy={optimisticId === row.activity.id || undefined}
+              >
+                <TimelineRow
+                  activity={row.activity}
+                  project={projects.find((item) => item.id === row.activity.projectId)}
+                  currentUser={currentUser}
+                  onEdit={onEditActivity}
+                  onDuplicate={onDuplicateActivity}
+                  onDelete={onDeleteActivity}
+                />
+              </motion.li>
+            )
+          )}
           </AnimatePresence>
         </ol>
       )}

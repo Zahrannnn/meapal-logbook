@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ActivityEntry, Project, User } from '../entities';
+import type { DayGap } from '../lib/time';
 import type { BackendCompetency, BackendProject, BackendTeam, BackendUser } from '../lib/api';
 import { AnalyticsPage } from '../features/analytics';
 import { AdminPage } from '../features/admin';
@@ -28,6 +29,9 @@ interface ActivityReportContentProps {
   filterProject: string;
   onDateChange: (date: Date) => void;
   onAddActivity: () => void;
+  onLogGap?: (start: string, end: string) => void;
+  onQuickRelog?: (template: ActivityEntry, freeSlots: DayGap[]) => void;
+  onCopyYesterday?: (source: ActivityEntry[]) => void;
   onEditActivity: (activity: ActivityEntry) => void;
   onDuplicateActivity: (activity: ActivityEntry) => void;
   onDeleteActivity: (id: string) => void;
@@ -84,6 +88,9 @@ export const ActivityReportContent: React.FC<ActivityReportContentProps> = ({
   filterProject,
   onDateChange,
   onAddActivity,
+  onLogGap,
+  onQuickRelog,
+  onCopyYesterday,
   onEditActivity,
   onDuplicateActivity,
   onDeleteActivity,
@@ -126,6 +133,9 @@ export const ActivityReportContent: React.FC<ActivityReportContentProps> = ({
         prevTaskBest={prevTaskBest}
         isStreakLoading={isStreakLoading}
         onAddActivity={onAddActivity}
+        onLogGap={onLogGap}
+        onQuickRelog={onQuickRelog}
+        onCopyYesterday={onCopyYesterday}
         onEditActivity={onEditActivity}
         onDuplicateActivity={onDuplicateActivity}
         onDeleteActivity={onDeleteActivity}
